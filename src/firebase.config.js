@@ -6,12 +6,12 @@ import { getStorage } from "firebase/storage";
 // TODO: Replace the following with your app's Firebase project configuration
 // You can find this in your Firebase Console -> Project Settings -> General
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDqsz2agOo3hLHXd8mX9iCyAKm22-5Q5OY",
+  authDomain: "music-e960b.firebaseapp.com",
+  projectId: "music-e960b",
+  storageBucket: "music-e960b.firebasestorage.app",
+  messagingSenderId: "330042670138",
+  appId: "1:330042670138:web:5a508c64342f5cd5934903"
 };
 
 // Initialize Firebase
