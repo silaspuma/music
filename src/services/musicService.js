@@ -24,10 +24,18 @@ export const uploadSong = async (file) => {
         if (common.picture && common.picture.length > 0) {
             const picture = common.picture[0];
             const coverRef = ref(storage, `covers/${Date.now()}_${artist}_${album}.jpg`);
-            // Create blob from buffer
-            const coverBlob = new Blob([picture.data], { type: picture.format });
-            const coverSnapshot = await uploadBytes(coverRef, coverBlob);
-            coverUrl = await getDownloadURL(coverSnapshot.ref);
+            try {
+                // Convert picture data to Uint8Array if it's a Buffer or other type
+                const pictureData = picture.data instanceof Uint8Array 
+                    ? picture.data 
+                    : new Uint8Array(picture.data);
+                const coverBlob = new Blob([pictureData], { type: picture.format });
+                const coverSnapshot = await uploadBytes(coverRef, coverBlob);
+                coverUrl = await getDownloadURL(coverSnapshot.ref);
+            } catch (coverError) {
+                console.warn("Failed to upload cover art:", coverError);
+                // Continue without cover art
+            }
         }
 
         // 4. Save to Firestore
