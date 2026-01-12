@@ -300,8 +300,3 @@ export const getRecentlyPlayed = async (limit = 50) => {
         return [];
     }
 };
-    } catch (error) {
-        console.error("Error getting liked songs: ", error);
-        return [];
-    }
-};
