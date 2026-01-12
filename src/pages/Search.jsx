@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon } from 'lucide-react';
-import { searchSongs } from '../services/musicService';
-import SongRow from '../components/SongRow';
-import { usePlayer } from '../contexts/PlayerContext';
-
-import React, { useState, useEffect } from 'react';
 import { Search as SearchIcon, Filter, X } from 'lucide-react';
 import { searchSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
