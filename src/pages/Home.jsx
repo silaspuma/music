@@ -49,8 +49,8 @@ const Home = () => {
             {/* Gradient Background */}
             <div className="absolute top-0 left-0 w-full h-[332px] bg-gradient-to-b from-[#222222] to-[#121212] z-0 pointer-events-none"></div>
 
-            <div className="relative z-10 p-8">
-                <h1 className="text-3xl font-bold mb-6 tracking-tight">{greeting()}</h1>
+            <div className="relative z-10 p-4 sm:p-6 md:p-8">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 tracking-tight">{greeting()}</h1>
 
                 {/* Recently Added Section */}
                 <section className="mb-8">
@@ -62,7 +62,7 @@ const Home = () => {
                     {loading ? (
                         <div className="text-gray-500">Loading...</div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                             {recentSongs.length > 0 ? recentSongs.map((song, index) => (
                                 <Card key={song.id} song={song} index={index} onPlay={(_s, i) => playQueue(recentSongs, i)} />
                             )) : (

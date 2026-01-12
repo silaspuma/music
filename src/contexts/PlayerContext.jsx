@@ -10,6 +10,45 @@ export function PlayerProvider({ children }) {
     const [currentIndex, setCurrentIndex] = useState(-1);
     const audioRef = useRef(new Audio());
 
+    // Setup Media Session API for lock screen controls
+    useEffect(() => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', () => {
+                if (currentSong) setIsPlaying(true);
+            });
+            navigator.mediaSession.setActionHandler('pause', () => {
+                setIsPlaying(false);
+            });
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                playNext();
+            });
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                playPrevious();
+            });
+        }
+    }, []);
+
+    // Update Media Session metadata when song changes
+    useEffect(() => {
+        if ('mediaSession' in navigator && currentSong) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentSong.title,
+                artist: currentSong.artist,
+                album: currentSong.album,
+                artwork: currentSong.imageUrl
+                    ? [
+                        {
+                            src: currentSong.imageUrl,
+                            sizes: '512x512',
+                            type: 'image/jpeg',
+                        }
+                    ]
+                    : []
+            });
+            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+        }
+    }, [currentSong, isPlaying]);
+
     useEffect(() => {
         // Configure audio element
         audioRef.current.volume = volume;

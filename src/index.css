@@ -79,6 +79,16 @@ a {
   transform: scale(0.96);
 }
 
+/* Touch-friendly button feedback */
+.touch-active {
+  -webkit-tap-highlight-color: transparent;
+  active-transition: transform 0.15s ease;
+}
+
+.touch-active:active {
+  transform: scale(0.95);
+}
+
 /* Slider / Range Input Styling */
 input[type=range] {
   -webkit-appearance: none;

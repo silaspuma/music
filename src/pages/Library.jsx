@@ -27,18 +27,20 @@ const Library = () => {
     };
 
     const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
 
         try {
             setUploading(true);
-            await uploadSong(file);
+            const uploadPromises = files.map(file => uploadSong(file));
+            await Promise.all(uploadPromises);
             setUploading(false);
             fetchSongs();
+            alert(`Successfully uploaded ${files.length} song(s)!`);
         } catch (error) {
             console.error("Upload failed", error);
             setUploading(false);
-            alert("Upload failed. Please try again.");
+            alert(`Upload failed: ${error.message || 'Please try again.'}`);
         }
     };
 
@@ -50,15 +52,15 @@ const Library = () => {
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
 
             {/* Header / Gradient */}
-            <div className="relative h-[280px] w-full bg-gradient-to-b from-[#4000F4] to-[#121212] flex items-end p-8 gap-6">
-                <div className="relative z-10 h-[192px] w-[192px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-gradient-to-br from-[#450af5] to-[#c4efd9] shrink-0">
-                    <span className="text-6xl text-white opacity-50">♥</span> // Liked Songs placeholder style
+            <div className="relative h-[180px] sm:h-[240px] md:h-[280px] w-full bg-gradient-to-b from-[#4000F4] to-[#121212] flex flex-col sm:flex-row items-end p-4 sm:p-6 md:p-8 gap-4 sm:gap-6">
+                <div className="relative z-10 h-[120px] sm:h-[160px] md:h-[192px] w-[120px] sm:w-[160px] md:w-[192px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-gradient-to-br from-[#450af5] to-[#c4efd9] shrink-0 rounded-lg">
+                    <span className="text-4xl sm:text-5xl md:text-6xl text-white opacity-50">♥</span>
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">
                     <span className="uppercase text-xs font-bold tracking-wider text-white">Playlist</span>
-                    <h1 className="text-[90px] font-black tracking-tighter text-white leading-tight mb-4 truncate">Your Library</h1>
-                    <div className="flex items-center gap-2 text-sm font-bold text-white">
+                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">Your Library</h1>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-white">
                         <span className="cursor-pointer">User</span>
                         <span className="font-normal text-[#b3b3b3]">• {songs.length} songs</span>
                     </div>
@@ -66,35 +68,35 @@ const Library = () => {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 px-8 py-6">
+            <div className="relative z-10 px-4 sm:px-6 md:px-8 py-4 md:py-6">
                 {/* Toolbar */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
-                        <button className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <button className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477] touch-active">
                             <svg role="img" height="24" width="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 010 1.212L7.05 20.394a.7.7 0 01-1.05-.606V4.212a.7.7 0 011.05-.606z"></path></svg>
                         </button>
                         <button
                             onClick={handleUploadClick}
                             disabled={uploading}
-                            className="bg-transparent border border-[#727272] text-white rounded-full px-4 py-2 text-sm font-bold hover:border-white transition-colors flex items-center gap-2"
+                            className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active"
                         >
                             {uploading ? (
                                 <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                             ) : (
                                 <Upload size={16} />
                             )}
-                            Upload Song
+                            {uploading ? 'Uploading...' : 'Upload Songs'}
                         </button>
-                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" className="hidden" />
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
                     </div>
-                    <div className="flex items-center gap-2 text-[#b3b3b3] cursor-pointer hover:text-white transition-colors">
-                        <span className="text-sm font-semibold">List</span>
+                    <div className="flex items-center gap-2 text-[#b3b3b3] cursor-pointer hover:text-white transition-colors text-xs sm:text-sm">
+                        <span className="font-semibold">List</span>
                         <svg role="img" height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 14.5H5V13h10v1.5zm0-5.75H5v-1.5h10v1.5zM15 3H5V1.5h10V3zM3 3H1V1.5h2V3zm0 11.5H1V13h2v1.5zm0-5.75H1v-1.5h2v1.5z"></path></svg>
                     </div>
                 </div>
 
-                {/* Table Header */}
-                <div className="grid grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 py-2 border-b border-[#282828] text-[#a7a7a7] text-sm font-normal mb-4 sticky top-0 bg-[#121212] z-20">
+                {/* Table Header - Hidden on mobile */}
+                <div className="hidden sm:grid grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 py-2 border-b border-[#282828] text-[#a7a7a7] text-sm font-normal mb-4 sticky top-0 bg-[#121212] z-20">
                     <span className="w-5 text-center">#</span>
                     <span>Title</span>
                     <span>Album</span>

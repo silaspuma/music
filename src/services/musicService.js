@@ -59,21 +59,25 @@ export const getSongs = async () => {
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error getting songs: ", error);
-        return [];
+        if (error.code === 'permission-denied') {
+            console.warn('Songs require proper Firestore permissions. Check your Firebase security rules.');
+        }
+        throw error;
     }
 };
 
 export const searchSongs = async (term) => {
-    // Client-side filtering for simplicity with small datasets, 
-    // or we could do a simple firestore query if we structure it right.
-    // Given requirements, let's fetch all and filter or use a basic query.
-    // For MVP scale, fetching all is fine.
-    const allSongs = await getSongs();
-    if (!term) return allSongs;
-    const lowerTerm = term.toLowerCase();
-    return allSongs.filter(song =>
-        song.title.toLowerCase().includes(lowerTerm) ||
-        song.artist.toLowerCase().includes(lowerTerm) ||
-        song.album.toLowerCase().includes(lowerTerm)
-    );
+    try {
+        const allSongs = await getSongs();
+        if (!term) return allSongs;
+        const lowerTerm = term.toLowerCase();
+        return allSongs.filter(song =>
+            song.title.toLowerCase().includes(lowerTerm) ||
+            song.artist.toLowerCase().includes(lowerTerm) ||
+            song.album.toLowerCase().includes(lowerTerm)
+        );
+    } catch (error) {
+        console.error("Error searching songs: ", error);
+        return [];
+    }
 }

@@ -38,23 +38,23 @@ const Artist = () => {
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
 
             {/* Header Image / Gradient */}
-            <div className="relative h-[300px] w-full bg-gradient-to-b from-[#535353] to-[#121212] flex items-end p-8">
+            <div className="relative h-[200px] sm:h-[250px] md:h-[300px] w-full bg-gradient-to-b from-[#535353] to-[#121212] flex items-end p-4 sm:p-6 md:p-8">
                 {artistImage && (
                     <div className="absolute inset-0 z-0 opacity-30">
                         <img src={artistImage} alt="" className="w-full h-full object-cover blur-3xl" />
                     </div>
                 )}
 
-                <div className="relative z-10 flex flex-col gap-y-4">
-                    <span className="flex items-center gap-2 text-sm font-bold tracking-widest text-white uppercase"><span className="bg-[#3d91f4] text-white p-[2px] rounded-full inline-flex items-center justify-center w-6 h-6"><svg role="img" height="12" width="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></span>Verified Artist</span>
-                    <h1 className="text-[96px] font-black tracking-tighter text-white leading-none mb-2 drop-shadow-lg">{decodeURIComponent(name)}</h1>
-                    <div className="text-md font-medium text-white drop-shadow-md">
+                <div className="relative z-10 flex flex-col gap-y-2 sm:gap-y-3 md:gap-y-4">
+                    <span className="flex items-center gap-2 text-xs font-bold tracking-widest text-white uppercase"><span className="bg-[#3d91f4] text-white p-[2px] rounded-full inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6"><svg role="img" height="12" width="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></span>Verified Artist</span>
+                    <h1 className="text-4xl sm:text-6xl md:text-[96px] font-black tracking-tighter text-white leading-none mb-1 sm:mb-2 drop-shadow-lg">{decodeURIComponent(name)}</h1>
+                    <div className="text-sm sm:text-md font-medium text-white drop-shadow-md">
                         <span>{songs.length.toLocaleString()} monthly listeners (fake)</span>
                     </div>
                 </div>
             </div>
 
-            <div className="relative z-10 p-8 pt-6 bg-gradient-to-b from-[#121212]/20 to-[#121212]">
+            <div className="relative z-10 p-4 sm:p-6 md:p-8 pt-4 md:pt-6 bg-gradient-to-b from-[#121212]/20 to-[#121212]">
                 <div className="mb-8">
                     <button onClick={handlePlayAll} className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
                         <Play fill="currentColor" size={28} />

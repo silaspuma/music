@@ -44,10 +44,10 @@ const Player = () => {
     if (!currentSong) return null;
 
     return (
-        <div className="h-[90px] bg-[#181818] border-t border-[#282828] text-white px-4 md:px-6 flex items-center justify-between fixed bottom-0 left-0 right-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.45)]">
+        <div className="h-[90px] md:h-[110px] bg-[#181818] border-t border-[#282828] text-white px-3 md:px-6 py-2 flex items-center justify-between fixed bottom-0 left-0 right-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.45)]">
 
             {/* Left: Song Info */}
-            <div className="flex items-center w-[30%] min-w-[180px]">
+            <div className="hidden sm:flex items-center w-[30%] min-w-[180px]">
                 <div className="relative group">
                     {currentSong.imageUrl ? (
                         <img src={currentSong.imageUrl} alt="Cover" className="h-14 w-14 shadow-lg rounded-md mr-4" />
@@ -65,21 +65,21 @@ const Player = () => {
             </div>
 
             {/* Center: Controls */}
-            <div className="flex flex-col items-center max-w-[40%] w-full">
-                <div className="flex items-center gap-x-6 mb-2">
-                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale"><Shuffle size={16} /></button>
-                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale" onClick={playPrevious}><SkipBack size={20} fill="currentColor" /></button>
+            <div className="flex flex-col items-center max-w-[100%] sm:max-w-[40%] w-full gap-1 sm:gap-2">
+                <div className="flex items-center gap-x-3 sm:gap-x-6">
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale hidden sm:block"><Shuffle size={16} /></button>
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale touch-active" onClick={playPrevious}><SkipBack size={18} md:size={20} fill="currentColor" /></button>
                     <button
-                        className="bg-white rounded-full p-2 text-black hover:scale-105 transition-transform btn-scale"
+                        className="bg-white rounded-full p-2 text-black hover:scale-105 transition-transform btn-scale touch-active"
                         onClick={togglePlay}
                     >
                         {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
                     </button>
-                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale" onClick={playNext}><SkipForward size={20} fill="currentColor" /></button>
-                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale"><Repeat size={16} /></button>
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale touch-active" onClick={playNext}><SkipForward size={18} md:size={20} fill="currentColor" /></button>
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors btn-scale hidden sm:block"><Repeat size={16} /></button>
                 </div>
 
-                <div className="w-full flex items-center gap-x-2 text-xs text-[#a7a7a7] font-medium group"
+                <div className="w-full flex items-center gap-x-1 sm:gap-x-2 text-xs text-[#a7a7a7] font-medium group hidden sm:flex"
                     onMouseEnter={() => setIsHoveringSeek(true)}
                     onMouseLeave={() => setIsHoveringSeek(false)}>
                     <span className="min-w-[40px] text-right">{formatTime(currentTime)}</span>
@@ -109,8 +109,8 @@ const Player = () => {
                 </div>
             </div>
 
-            {/* Right: Volume & Extras */}
-            <div className="flex items-center justify-end w-[30%] min-w-[180px] gap-x-3">
+            {/* Right: Volume & Extras (hidden on mobile) */}
+            <div className="hidden sm:flex items-center justify-end w-[30%] min-w-[180px] gap-x-3">
                 <button className="text-[#b3b3b3] hover:text-white"><Mic2 size={16} /></button>
                 <button className="text-[#b3b3b3] hover:text-white"><ListMusic size={16} /></button>
                 <button className="text-[#b3b3b3] hover:text-white"><MonitorSpeaker size={16} /></button>

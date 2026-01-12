@@ -22,6 +22,9 @@ export const getPlaylists = async () => {
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error fetching playlists: ", error);
-        return [];
+        if (error.code === 'permission-denied') {
+            console.warn('Playlists require proper Firestore permissions.');
+        }
+        throw error;
     }
 };

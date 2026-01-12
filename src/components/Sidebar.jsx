@@ -3,8 +3,9 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, Library, PlusSquare, Heart, Music } from 'lucide-react';
 import { createPlaylist, getPlaylists } from '../services/playlistService';
 
-const Sidebar = () => {
+const Sidebar = ({ onNavigate }) => {
     const [playlists, setPlaylists] = useState([]);
+    const [playlistError, setPlaylistError] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -12,8 +13,15 @@ const Sidebar = () => {
     }, []);
 
     const fetchPlaylists = async () => {
-        const data = await getPlaylists();
-        setPlaylists(data);
+        try {
+            const data = await getPlaylists();
+            setPlaylists(data);
+            setPlaylistError(false);
+        } catch (error) {
+            console.error('Failed to load playlists:', error);
+            setPlaylistError(true);
+            setPlaylists([]);
+        }
     };
 
     const handleCreatePlaylist = async () => {
@@ -36,9 +44,9 @@ const Sidebar = () => {
 
             {/* Main Nav */}
             <div className="flex flex-col px-3 gap-1">
-                <NavItem to="/" icon={<Home size={26} />} label="Home" active={location.pathname === '/'} />
-                <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} />
-                <NavItem to="/library" icon={<Library size={26} />} label="Your Library" active={location.pathname === '/library'} />
+                <NavItem to="/" icon={<Home size={26} />} label="Home" active={location.pathname === '/'} onNavigate={onNavigate} />
+                <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} onNavigate={onNavigate} />
+                <NavItem to="/library" icon={<Library size={26} />} label="Your Library" active={location.pathname === '/library'} onNavigate={onNavigate} />
             </div>
 
             <div className="mt-4 pt-1 px-3 flex flex-col">
@@ -66,23 +74,27 @@ const Sidebar = () => {
             {/* Playlists Scroll Area */}
             <div className="flex-1 overflow-y-auto px-6 custom-scrollbar pb-8">
                 <div className="flex flex-col gap-3">
-                    {playlists.map(playlist => (
-                        <div key={playlist.id} className="text-sm hover:text-white cursor-pointer truncate font-normal">
-                            {playlist.name}
-                        </div>
-                    ))}
-                    {[...Array(10)].map((_, i) => (
-                        <div key={i} className="text-sm hover:text-white cursor-pointer truncate font-normal opacity-0 animate-pulse">Loading...</div>
-                    ))}
+                    {playlistError ? (
+                        <div className="text-xs text-[#a7a7a7] italic">Unable to load playlists</div>
+                    ) : playlists.length === 0 ? (
+                        <div className="text-xs text-[#727272] italic">No playlists yet</div>
+                    ) : (
+                        playlists.map(playlist => (
+                            <div key={playlist.id} className="text-sm hover:text-white cursor-pointer truncate font-normal">
+                                {playlist.name}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-const NavItem = ({ to, icon, label, active }) => (
+const NavItem = ({ to, icon, label, active, onNavigate }) => (
     <NavLink
         to={to}
+        onClick={() => onNavigate?.()}
         className={`relative flex items-center gap-x-4 px-4 py-3 rounded-md transition-all font-bold text-md ${active ? 'text-white' : 'text-[#b3b3b3] hover:text-white'} `}
     >
         {active && <span className="absolute left-0 h-7 w-[3px] rounded-full bg-white" aria-hidden />}

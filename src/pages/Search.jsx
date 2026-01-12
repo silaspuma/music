@@ -27,8 +27,8 @@ const Search = () => {
             {/* Gradient Background - More subtle for Search */}
             <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-[#181818] to-[#121212] z-0 pointer-events-none"></div>
 
-            <div className="relative z-10 p-8">
-                <h1 className="text-2xl font-bold mb-6 tracking-tight">Search</h1>
+            <div className="relative z-10 p-4 sm:p-6 md:p-8">
+                <h1 className="text-xl sm:text-2xl font-bold mb-6 tracking-tight">Search</h1>
                 <div className="relative mb-8 max-w-[400px]">
                     <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#121212] z-10" size={20} />
                     <input
