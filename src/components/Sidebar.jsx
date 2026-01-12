@@ -27,7 +27,8 @@ const Sidebar = ({ onNavigate }) => {
     const handleCreatePlaylist = async () => {
         const name = prompt("Enter playlist name:");
         if (name) {
-            await createPlaylist(name);
+            const description = prompt("Enter playlist description (optional):") || '';
+            await createPlaylist(name, description);
             fetchPlaylists();
         }
     };
@@ -60,12 +61,13 @@ const Sidebar = ({ onNavigate }) => {
                         </div>
                         Create Playlist
                     </button>
-                    <button className="flex items-center gap-x-4 px-4 py-3 rounded-md hover:text-white transition-colors text-sm font-bold text-[#b3b3b3] w-full text-left group">
-                        <div className="bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded-[3px] p-1 text-white opacity-80 group-hover:opacity-100 transition-opacity">
-                            <Heart size={14} fill="currentColor" />
-                        </div>
-                        Liked Songs
-                    </button>
+                    <NavItem 
+                        to="/liked" 
+                        icon={<div className="bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
+                        label="Liked Songs" 
+                        active={location.pathname === '/liked'} 
+                        onNavigate={onNavigate} 
+                    />
                 </div>
             </div>
 
@@ -80,9 +82,14 @@ const Sidebar = ({ onNavigate }) => {
                         <div className="text-xs text-[#727272] italic">No playlists yet</div>
                     ) : (
                         playlists.map(playlist => (
-                            <div key={playlist.id} className="text-sm hover:text-white cursor-pointer truncate font-normal">
+                            <NavLink
+                                key={playlist.id}
+                                to={`/playlist/${playlist.id}`}
+                                onClick={() => onNavigate?.()}
+                                className={({ isActive }) => `text-sm hover:text-white cursor-pointer truncate font-normal block py-1 ${isActive ? 'text-white' : 'text-[#b3b3b3]'}`}
+                            >
                                 {playlist.name}
-                            </div>
+                            </NavLink>
                         ))
                     )}
                 </div>

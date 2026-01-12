@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { trackPlay } from '../services/musicService';
 
 const PlayerContext = createContext();
 
@@ -73,7 +74,13 @@ export function PlayerProvider({ children }) {
         if (currentSong) {
             audioRef.current.src = currentSong.url;
             audioRef.current.play()
-                .then(() => setIsPlaying(true))
+                .then(() => {
+                    setIsPlaying(true);
+                    // Track play in Firebase
+                    if (currentSong.id) {
+                        trackPlay(currentSong.id);
+                    }
+                })
                 .catch(e => console.error("Error playing audio:", e));
         } else {
             audioRef.current.pause();

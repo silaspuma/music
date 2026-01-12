@@ -48,6 +48,10 @@ const Library = () => {
         playQueue(songs, index);
     };
 
+    const handleDeleteSong = (songId) => {
+        setSongs(songs.filter(s => s.id !== songId));
+    };
+
     return (
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
 
@@ -119,6 +123,7 @@ const Library = () => {
                                 song={song}
                                 index={index}
                                 onPlay={handlePlay}
+                                onDelete={handleDeleteSong}
                             />
                         ))
                     )}
