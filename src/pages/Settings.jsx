@@ -219,7 +219,7 @@ const Settings = () => {
                                     and enjoy a beautiful, feature-rich music player.
                                 </p>
                                 <p className="text-sm text-[#b3b3b3]">
-                                    Version 1.1.2 • Made with ❤️ by silas
+                                    Version 1.1.4 • Made with ❤️ by silas
                                 </p>
                             </div>
                         </div>

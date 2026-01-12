@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getLikedSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Clock3, Play } from 'lucide-react';
+import { Clock3, Play, Heart } from 'lucide-react';
 
 const LikedSongs = () => {
     const [songs, setSongs] = useState([]);
@@ -39,7 +39,7 @@ const LikedSongs = () => {
             {/* Header / Gradient */}
             <div className="relative h-[180px] sm:h-[240px] md:h-[280px] w-full bg-gradient-to-b from-[#5038a0] to-[#121212] flex flex-col sm:flex-row items-end p-4 sm:p-6 md:p-8 gap-4 sm:gap-6">
                 <div className="relative z-10 h-[120px] sm:h-[160px] md:h-[192px] w-[120px] sm:w-[160px] md:w-[192px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-gradient-to-br from-[#450af5] to-[#c4efd9] shrink-0 rounded-lg">
-                    <span className="text-4xl sm:text-5xl md:text-6xl text-white">♥</span>
+                    <Heart fill="#ffffff" stroke="none" size={80} />
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">

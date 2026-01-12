@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Library, PlusSquare, Heart, Music, Clock, BarChart3, Settings } from 'lucide-react';
+import { Home, Search, Library, Plus, Heart, Music, Clock, BarChart3, Settings } from 'lucide-react';
 import { createPlaylist, getPlaylists } from '../services/playlistService';
 
 const Sidebar = ({ onNavigate }) => {
@@ -57,7 +57,7 @@ const Sidebar = ({ onNavigate }) => {
                         className="flex items-center gap-x-4 px-4 py-3 rounded-md hover:text-white transition-colors text-sm font-bold text-[#b3b3b3] w-full text-left group"
                     >
                         <div className="bg-[#b3b3b3] group-hover:bg-white transition-colors rounded-[3px] p-1 text-black">
-                            <PlusSquare size={14} fill="currentColor" />
+                            <Plus size={14} fill="currentColor" />
                         </div>
                         Create Playlist
                     </button>
@@ -123,14 +123,18 @@ const NavItem = ({ to, icon, label, active, onNavigate }) => (
     <NavLink
         to={to}
         onClick={() => onNavigate?.()}
-        className={`relative flex items-center gap-x-4 px-4 py-3 rounded-md transition-all font-bold text-md ${active ? 'text-white' : 'text-[#b3b3b3] hover:text-white'} `}
+        className={({ isActive: isNavActive }) => `relative flex items-center gap-x-4 px-4 py-3 rounded-md transition-all font-bold text-md ${isNavActive ? 'text-white' : 'text-[#b3b3b3] hover:text-white'}`}
     >
-        {active && <span className="absolute left-0 h-7 w-[3px] rounded-full bg-white" aria-hidden />}
-        {React.cloneElement(icon, {
-            fill: active ? "currentColor" : "none", // Apple/Spotify style: filled when active
-            strokeWidth: active ? 0 : 2
-        })}
-        <span>{label}</span>
+        {({ isActive: isNavActive }) => (
+            <>
+                {isNavActive && <span className="absolute left-0 h-7 w-[3px] rounded-full bg-white" aria-hidden />}
+                {React.cloneElement(icon, {
+                    fill: isNavActive ? "currentColor" : "none", // Apple/Spotify style: filled when active
+                    strokeWidth: isNavActive ? 0 : 2
+                })}
+                <span>{label}</span>
+            </>
+        )}
     </NavLink>
 );
 
