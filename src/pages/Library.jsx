@@ -3,6 +3,7 @@ import { Upload, Clock3, Search, ArrowUpDown, Shuffle } from 'lucide-react';
 import { getSongs, uploadSong } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
+import { formatTotalDuration } from '../utils/formatDuration';
 
 const Library = () => {
     const [songs, setSongs] = useState([]);
@@ -114,6 +115,7 @@ const Library = () => {
     };
 
     const totalMinutes = Math.floor(sortedSongs.reduce((sum, song) => sum + (song.duration || 0), 0) / 60);
+    const formattedDuration = formatTotalDuration(sortedSongs.reduce((sum, song) => sum + (song.duration || 0), 0));
 
     return (
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
@@ -129,7 +131,7 @@ const Library = () => {
                     <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">Your Library</h1>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-white">
                         <span className="cursor-pointer">User</span>
-                        <span className="font-normal text-[#b3b3b3]">• {songs.length} songs, {totalMinutes} min</span>
+                        <span className="font-normal text-[#b3b3b3]">• {songs.length} songs, {formattedDuration}</span>
                     </div>
                 </div>
             </div>

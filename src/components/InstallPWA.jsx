@@ -14,6 +14,12 @@ const InstallPWA = () => {
             return;
         }
 
+        // Check if user has already seen the prompt
+        const alreadySeen = localStorage.getItem('pwa-prompt-shown');
+        if (alreadySeen) {
+            return;
+        }
+
         // Check if iOS
         const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         setIsIOS(ios);
@@ -50,11 +56,16 @@ const InstallPWA = () => {
         if (outcome === 'accepted') {
             setDeferredPrompt(null);
             setShowInstall(false);
+            localStorage.setItem('pwa-prompt-shown', 'true');
+        } else {
+            // User dismissed, mark as shown so we don't show again
+            localStorage.setItem('pwa-prompt-shown', 'true');
         }
     };
 
     const handleDismiss = () => {
         setShowInstall(false);
+        localStorage.setItem('pwa-prompt-shown', 'true');
         localStorage.setItem('pwa-dismissed', 'true');
     };
 

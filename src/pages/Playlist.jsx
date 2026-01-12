@@ -6,6 +6,7 @@ import SongRow from '../components/SongRow';
 import { Play, MoreHorizontal, Pencil, Trash2, Upload, Shuffle } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase.config';
+import { formatTotalDuration } from '../utils/formatDuration';
 
 const Playlist = () => {
     const { id } = useParams();
@@ -152,7 +153,7 @@ const Playlist = () => {
                         )
                     )}
                     <div className="text-sm font-bold text-white mt-2">
-                        <span>{playlist.songs?.length || 0} songs, {Math.floor(playlist.songs?.reduce((sum, song) => sum + (song.duration || 0), 0) / 60) || 0} min</span>
+                        <span>{playlist.songs?.length || 0} songs, {formatTotalDuration(playlist.songs?.reduce((sum, song) => sum + (song.duration || 0), 0) || 0)}</span>
                     </div>
                 </div>
             </div>

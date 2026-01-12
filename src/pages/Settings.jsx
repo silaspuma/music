@@ -95,12 +95,19 @@ const Settings = () => {
                 </div>
 
                 {/* Theme Settings */}
-                <div className="mb-8">
+                <div className="mb-8 relative">
                     <div className="flex items-center gap-3 mb-4">
                         <Palette className="text-[#1ed760]" size={24} />
                         <h2 className="text-2xl font-bold">Theme</h2>
                     </div>
-                    <div className="bg-[#1a1a1a] rounded-lg p-6">
+                    <div className="bg-[#1a1a1a] rounded-lg p-6 relative">
+                        {/* Unavailable overlay */}
+                        <div className="absolute inset-0 rounded-lg bg-black/40 backdrop-blur-sm flex items-center justify-center z-10">
+                            <div className="text-center">
+                                <p className="text-[#b3b3b3] text-lg font-semibold">Themes are currently unavailable right now, sorry...</p>
+                                <p className="text-[#727272] text-sm mt-2">Coming soon!</p>
+                            </div>
+                        </div>
                         <p className="text-[#b3b3b3] mb-4">Choose your preferred color scheme</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {Object.keys(themes).map((themeKey) => {
@@ -219,7 +226,7 @@ const Settings = () => {
                                     and enjoy a beautiful, feature-rich music player.
                                 </p>
                                 <p className="text-sm text-[#b3b3b3]">
-                                    Version 1.1.4 • Made with ❤️ by silas
+                                    Version 1.1.6 • Made with ❤️ by silas
                                 </p>
                             </div>
                         </div>

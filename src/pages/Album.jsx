@@ -4,6 +4,7 @@ import { getSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Clock3, Heart, MoreHorizontal } from 'lucide-react';
+import { formatTotalDuration } from '../utils/formatDuration';
 
 const Album = () => {
     const { name } = useParams();
@@ -27,6 +28,7 @@ const Album = () => {
 
     const albumCover = songs.length > 0 ? songs[0].imageUrl : null;
     const artistName = songs.length > 0 ? songs[0].artist : "Unknown Artist";
+    const albumDuration = formatTotalDuration(songs.reduce((sum, song) => sum + (song.duration || 0), 0));
 
     return (
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
@@ -48,7 +50,7 @@ const Album = () => {
                             {songs[0]?.imageUrl && <img src={songs[0].imageUrl} className="h-full w-full object-cover" />}
                         </div>
                         <span className="hover:underline cursor-pointer">{artistName}</span>
-                        <span className="font-normal text-[#b3b3b3]">• 2024 • {songs.length} songs</span>
+                        <span className="font-normal text-[#b3b3b3]">• 2024 • {songs.length} songs, {albumDuration}</span>
                     </div>
                 </div>
             </div>
