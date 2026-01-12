@@ -1,51 +1,39 @@
 import { db, storage } from '../firebase.config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import * as mm from 'music-metadata-browser';
 
 export const uploadSong = async (file) => {
     try {
-        // 1. Extract Metadata
-        const metadata = await mm.parseBlob(file);
-        const { common, format } = metadata;
+        // Extract title from filename
+        const title = file.name.replace(/\.[^/.]+$/, "").replace(/-|_/g, " ");
+        const artist = "Unknown Artist";
+        const album = "Unknown Album";
+        
+        // Get duration by creating audio element
+        let duration = 0;
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const arrayBuffer = await file.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            duration = audioBuffer.duration;
+        } catch (e) {
+            console.warn("Could not determine audio duration:", e);
+            duration = 0;
+        }
 
-        const title = common.title || file.name.replace(/\.[^/.]+$/, "");
-        const artist = common.artist || "Unknown Artist";
-        const album = common.album || "Unknown Album";
-        const duration = format.duration || 0;
-
-        // 2. Upload Audio File
+        // Upload audio file
         const storageRef = ref(storage, `songs/${Date.now()}_${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
         const downloadUrl = await getDownloadURL(snapshot.ref);
 
-        // 3. Upload Cover Art (if available)
-        let coverUrl = null;
-        if (common.picture && common.picture.length > 0) {
-            const picture = common.picture[0];
-            const coverRef = ref(storage, `covers/${Date.now()}_${artist}_${album}.jpg`);
-            try {
-                // Convert picture data to Uint8Array if it's a Buffer or other type
-                const pictureData = picture.data instanceof Uint8Array 
-                    ? picture.data 
-                    : new Uint8Array(picture.data);
-                const coverBlob = new Blob([pictureData], { type: picture.format });
-                const coverSnapshot = await uploadBytes(coverRef, coverBlob);
-                coverUrl = await getDownloadURL(coverSnapshot.ref);
-            } catch (coverError) {
-                console.warn("Failed to upload cover art:", coverError);
-                // Continue without cover art
-            }
-        }
-
-        // 4. Save to Firestore
+        // Save to Firestore
         const songData = {
             title,
             artist,
             album,
             duration,
             url: downloadUrl,
-            imageUrl: coverUrl,
+            imageUrl: null,
             createdAt: new Date(),
             searchKeywords: [title, artist, album].map(s => s.toLowerCase())
         };
