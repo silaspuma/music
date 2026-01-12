@@ -4,6 +4,7 @@ import { getSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play } from 'lucide-react';
+// import ColorThief from 'colorthief' // We would use this for dynamic colors in full implementation
 
 const Artist = () => {
     const { name } = useParams();
@@ -14,9 +15,7 @@ const Artist = () => {
     useEffect(() => {
         const fetchArtistSongs = async () => {
             setLoading(true);
-            // In a real app, we'd have a specific query or endpoint
             const allSongs = await getSongs();
-            // Decode URI component just in case
             const decodedName = decodeURIComponent(name);
             const artistSongs = allSongs.filter(s => s.artist === decodedName);
             setSongs(artistSongs);
@@ -28,37 +27,43 @@ const Artist = () => {
     const handlePlayAll = () => {
         if (songs.length > 0) {
             playSong(songs[0]);
-            // Ideally set queue to all songs here
         }
     };
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    if (loading) return <div className="p-8 text-[#b3b3b3]">Loading...</div>;
 
     const artistImage = songs.length > 0 ? songs[0].imageUrl : null;
 
     return (
-        <div className="pb-32">
-            {/* Header */}
-            <div className="flex items-end gap-6 p-8 bg-gradient-to-b from-gray-700 to-[#121212]">
-                <div className="h-52 w-52 bg-[#333] shadow-2xl flex items-center justify-center rounded-full overflow-hidden">
-                    {artistImage ? <img src={artistImage} alt={name} className="h-full w-full object-cover" /> : <span className="text-6xl font-bold">👤</span>}
-                </div>
-                <div className="flex flex-col gap-2">
-                    <span className="uppercase text-xs font-bold tracking-wider flex items-center gap-1"><span className="bg-blue-500 text-white text-[10px] px-1 rounded-sm">✓</span> Verified Artist</span>
-                    <h1 className="text-8xl font-black tracking-tight text-white mb-4">{decodeURIComponent(name)}</h1>
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
-                        <span>{songs.length} songs</span>
+        <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
+
+            {/* Header Image / Gradient */}
+            <div className="relative h-[300px] w-full bg-gradient-to-b from-[#535353] to-[#121212] flex items-end p-8">
+                {artistImage && (
+                    <div className="absolute inset-0 z-0 opacity-30">
+                        <img src={artistImage} alt="" className="w-full h-full object-cover blur-3xl" />
+                    </div>
+                )}
+
+                <div className="relative z-10 flex flex-col gap-y-4">
+                    <span className="flex items-center gap-2 text-sm font-bold tracking-widest text-white uppercase"><span className="bg-[#3d91f4] text-white p-[2px] rounded-full inline-flex items-center justify-center w-6 h-6"><svg role="img" height="12" width="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></span>Verified Artist</span>
+                    <h1 className="text-[96px] font-black tracking-tighter text-white leading-none mb-2 drop-shadow-lg">{decodeURIComponent(name)}</h1>
+                    <div className="text-md font-medium text-white drop-shadow-md">
+                        <span>{songs.length.toLocaleString()} monthly listeners (fake)</span>
                     </div>
                 </div>
             </div>
 
-            <div className="px-8 mt-4">
-                <button onClick={handlePlayAll} className="bg-green-500 text-black rounded-full p-4 hover:scale-105 transition-transform mb-8">
-                    <Play fill="currentColor" size={24} />
-                </button>
+            <div className="relative z-10 p-8 pt-6 bg-gradient-to-b from-[#121212]/20 to-[#121212]">
+                <div className="mb-8">
+                    <button onClick={handlePlayAll} className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
+                        <Play fill="currentColor" size={28} />
+                    </button>
+                    <button className="ml-8 text-white text-sm font-bold border border-[#727272] hover:border-white rounded-[4px] px-4 py-1.5 uppercase tracking-widest transition-colors">Follow</button>
+                </div>
 
-                <h2 className="text-2xl font-bold mb-4">Popular</h2>
-                <div className="flex flex-col gap-1">
+                <h2 className="text-2xl font-bold mb-4 text-white">Popular</h2>
+                <div className="flex flex-col">
                     {songs.map((song, index) => (
                         <SongRow
                             key={song.id}

@@ -1,27 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --background-base: #121212;
+  --background-base: #000000;
   --background-highlight: #1a1a1a;
   --background-press: #000;
-  --background-elevated-base: #242424;
+  --background-elevated-base: #121212;
   --background-elevated-highlight: #2a2a2a;
   --background-elevated-press: #000;
-  --text-base: #fff;
+  --text-base: #ffffff;
   --text-subdued: #a7a7a7;
   --text-bright-accent: #1ed760;
   --text-negative: #f15e6c;
   --text-warning: #ffa42b;
   --text-positive: #1ed760;
   --text-announcement: #3d91f4;
-  --essential-base: #fff;
+  --essential-base: #ffffff;
   --essential-subdued: #727272;
   --essential-bright-accent: #1ed760;
   --essential-negative: #e91429;
   --essential-warning: #ffa42b;
   --essential-positive: #1ed760;
   --essential-announcement: #0d72ea;
-  --decorative-base: #fff;
+  --decorative-base: #ffffff;
   --decorative-subdued: #292929;
-  --font-family: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --font-family: 'Figtree', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sidebar-width: 280px;
+  /* Wider sidebar */
+  --player-height: 90px;
 }
 
 * {
@@ -36,7 +42,9 @@ body {
   color: var(--text-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* App-like feel */
+  overflow: hidden;
+  user-select: none;
+  /* App-like feel */
 }
 
 a {
@@ -44,74 +52,124 @@ a {
   color: inherit;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - Thin and Dark */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 8px;
+  /* Thinner */
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: hsla(0,0%,100%,.3);
-  border-radius: 8px; /* Roundness of the scroll thumb */
-  border: 3px solid transparent; /* Creates padding around thumb */
-  background-clip: content-box;
+  background-color: hsla(0, 0%, 100%, .3);
+  border-radius: 4px;
+  /* Pill shape */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: hsla(0,0%,100%,.5);
+  background-color: hsla(0, 0%, 100%, .5);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
 }
 
 /* Utility classes */
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.text-sm {
+  font-size: 0.875rem;
 }
 
-.text-sm { font-size: 0.875rem; }
-.text-xs { font-size: 0.75rem; }
-.text-md { font-size: 1rem; }
-.text-lg { font-size: 1.125rem; }
-.text-xl { font-size: 1.5rem; }
-.font-bold { font-weight: 700; }
-.font-semibold { font-weight: 600; }
-
-.hover-bg-highlight:hover {
-  background-color: var(--background-highlight);
+.text-xs {
+  font-size: 0.75rem;
 }
 
-.transition-all {
-  transition: all 0.2s ease-in-out;
+.text-md {
+  font-size: 1rem;
 }
 
-/* Button Reset */
-button {
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  padding: 0;
+.text-lg {
+  font-size: 1.125rem;
 }
 
-.btn-primary {
-  background-color: var(--essential-bright-accent);
-  color: var(--background-base);
-  border-radius: 500px;
-  padding: 8px 32px;
+.text-xl {
+  font-size: 1.5rem;
+}
+
+.font-bold {
   font-weight: 700;
-  transition: transform 33ms cubic-bezier(.3,0,0,1), box-shadow 33ms cubic-bezier(.3,0,.1,1);
 }
 
-.btn-primary:hover {
-  transform: scale(1.04);
-  background-color: #3be477;
+.font-semibold {
+  font-weight: 600;
 }
 
-.btn-primary:active {
-  transform: scale(1);
-  background-color: #1abc54;
+.truncate-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Button Animations */
+.btn-scale {
+  transition: transform 0.1s ease;
+}
+
+.btn-scale:active {
+  transform: scale(0.95);
+}
+
+/* Slider / Range Input Styling */
+input[type=range] {
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #4d4d4d;
+  border-radius: 2px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -4px;
+  /* vertically center */
+  opacity: 0;
+  /* Hidden by default */
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Show thumb on hover of the group or input */
+.group:hover input[type=range]::-webkit-slider-thumb,
+input[type=range]:hover::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+/* Progress fill hack */
+/* Note: Standard CSS range doesn't support fill on left easily without JS or Firefox specific vars. 
+   We will handle fill color in JS or simple linear-gradient background update if possible.
+   For now, we stick to basic styling or use the green accent for the tracked part via inline style in React. */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

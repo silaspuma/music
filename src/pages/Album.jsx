@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Clock3 } from 'lucide-react';
+import { Play, Clock3, Heart, MoreHorizontal } from 'lucide-react';
 
 const Album = () => {
     const { name } = useParams();
@@ -23,56 +23,55 @@ const Album = () => {
         fetchAlbumSongs();
     }, [name]);
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    if (loading) return <div className="p-8 text-[#b3b3b3]">Loading...</div>;
 
     const albumCover = songs.length > 0 ? songs[0].imageUrl : null;
     const artistName = songs.length > 0 ? songs[0].artist : "Unknown Artist";
 
     return (
-        <div className="pb-32">
+        <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
+
             {/* Header */}
-            <div className="flex items-end gap-6 p-8 bg-gradient-to-b from-purple-800 to-[#121212]">
-                <div className="h-52 w-52 bg-[#333] shadow-2xl flex items-center justify-center rounded-sm transition-transform hover:scale-105">
-                    {albumCover ? <img src={albumCover} alt={name} className="h-full w-full object-cover shadow-lg" /> : <span className="text-6xl font-bold">💿</span>}
+            <div className="relative h-[340px] w-full bg-gradient-to-b from-[#602a5c] to-[#121212] flex items-end p-8 gap-6">
+                {/* Shadow Overlay */}
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-40 mix-blend-multiply"></div>
+
+                <div className="relative z-10 h-[232px] w-[232px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-[#333] shrink-0">
+                    {albumCover ? <img src={albumCover} alt={name} className="h-full w-full object-cover" /> : <span className="text-6xl font-bold">💿</span>}
                 </div>
-                <div className="flex flex-col gap-2">
-                    <span className="uppercase text-xs font-bold tracking-wider">Album</span>
-                    <h1 className="text-6xl font-black tracking-tight text-white mb-2">{decodeURIComponent(name)}</h1>
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
-                        {artistName && (
-                            <>
-                                <span className="hover:underline cursor-pointer text-white">{artistName}</span>
-                                <span>•</span>
-                            </>
-                        )}
-                        <span>{new Date().getFullYear()}</span> {/* Placeholder year */}
-                        <span>•</span>
-                        <span>{songs.length} songs</span>
+
+                <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">
+                    <span className="uppercase text-xs font-bold tracking-wider text-white">Album</span>
+                    <h1 className="text-[72px] font-black tracking-tighter text-white leading-tight mb-2 truncate">{decodeURIComponent(name)}</h1>
+                    <div className="flex items-center gap-2 text-sm font-bold text-white">
+                        <div className="h-6 w-6 rounded-full bg-gray-500 overflow-hidden">
+                            {/* Artist Avatar Placeholder */}
+                            {songs[0]?.imageUrl && <img src={songs[0].imageUrl} className="h-full w-full object-cover" />}
+                        </div>
+                        <span className="hover:underline cursor-pointer">{artistName}</span>
+                        <span className="font-normal text-[#b3b3b3]">• 2024 • {songs.length} songs, <span className="text-[#a7a7a7]">24 min 12 sec</span></span>
                     </div>
                 </div>
             </div>
 
-            <div className="px-8 mt-4">
-                {/* Actions Row */}
+            <div className="relative z-10 px-8 py-6 bg-[#121212]/40 backdrop-blur-3xl">
                 <div className="flex items-center gap-6 mb-8">
-                    <button className="bg-green-500 text-black rounded-full p-3 hover:scale-105 transition-transform">
-                        <Play fill="currentColor" size={24} />
+                    <button className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
+                        <Play fill="currentColor" size={28} />
                     </button>
-                    <button className="text-gray-400 hover:text-white border border-gray-600 rounded-full px-4 py-1 text-sm font-bold uppercase tracking-widest">
-                        Follow
-                    </button>
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors"><Heart size={32} /></button>
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors"><MoreHorizontal size={32} /></button>
                 </div>
 
-                {/* Header Row */}
-                <div className="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 px-4 py-2 border-b border-[#282828] text-gray-400 text-sm font-medium mb-4">
+                {/* Table Header */}
+                <div className="grid grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 py-2 border-b border-[#282828] text-[#a7a7a7] text-sm font-normal mb-4">
                     <span className="w-5 text-center">#</span>
                     <span>Title</span>
-                    <span>Artist</span>
-                    <span className="w-8"></span>
-                    <div className="flex justify-end w-12"><Clock3 size={16} /></div>
+                    <span className="invisible">Album</span> {/* Hidden on album page as redundant? Spotify duplicates it usually */}
+                    <div className="flex justify-end pr-8"><Clock3 size={16} /></div>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col">
                     {songs.map((song, index) => (
                         <SongRow
                             key={song.id}
@@ -81,6 +80,11 @@ const Album = () => {
                             onPlay={(s) => playSong(s)}
                         />
                     ))}
+                </div>
+
+                <div className="mt-8 pt-8 px-4 text-[#a7a7a7] text-xs font-medium">
+                    <p>© 2024 {artistName}</p>
+                    <p>℗ 2024 {artistName}</p>
                 </div>
             </div>
         </div>

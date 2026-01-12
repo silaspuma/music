@@ -5,21 +5,21 @@ import { Play } from 'lucide-react';
 
 const Card = ({ song, onPlay }) => (
     <div
-        className="bg-[#181818] p-4 rounded-md hover:bg-[#282828] transition-colors group cursor-pointer"
+        className="bg-[#181818] p-4 rounded-[6px] hover:bg-[#282828] transition-all duration-300 group cursor-pointer relative"
         onClick={() => onPlay(song)}
     >
-        <div className="relative mb-4">
+        <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-[6px] overflow-hidden">
             {song.imageUrl ? (
-                <img src={song.imageUrl} alt={song.title} className="w-full aspect-square object-cover rounded-md shadow-lg" />
+                <img src={song.imageUrl} alt={song.title} className="w-full aspect-square object-cover" />
             ) : (
-                <div className="w-full aspect-square bg-[#333] rounded-md shadow-lg flex items-center justify-center text-4xl text-gray-500 font-bold">♫</div>
+                <div className="w-full aspect-square bg-[#333] flex items-center justify-center text-4xl text-gray-500 font-bold">♫</div>
             )}
-            <button className="absolute bottom-2 right-2 bg-green-500 rounded-full p-3 text-black shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
-                <Play fill="currentColor" size={20} />
+            <button className="absolute bottom-2 right-2 bg-[#1ed760] rounded-full p-3 text-black shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-[#3be477]">
+                <Play fill="currentColor" size={24} className="ml-0.5" />
             </button>
         </div>
-        <h3 className="font-bold text-white mb-1 truncate">{song.title}</h3>
-        <p className="text-sm text-gray-400 truncate">{song.artist}</p>
+        <h3 className="font-bold text-white mb-2 truncate text-[16px]">{song.title}</h3>
+        <p className="text-sm text-[#a7a7a7] truncate line-clamp-2">{song.artist}</p>
     </div>
 );
 
@@ -45,26 +45,35 @@ const Home = () => {
     };
 
     return (
-        <div className="p-8 pb-32">
-            <h1 className="text-3xl font-bold mb-6">{greeting()}</h1>
+        <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
+            {/* Gradient Background */}
+            <div className="absolute top-0 left-0 w-full h-[332px] bg-gradient-to-b from-[#222222] to-[#121212] z-0 pointer-events-none"></div>
 
-            {/* Recently Added Section */}
-            <section className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold hover:underline cursor-pointer">Recently Added</h2>
-                    <span className="text-xs font-bold text-gray-400 hover:underline cursor-pointer tracking-wider">SHOW ALL</span>
-                </div>
+            <div className="relative z-10 p-8">
+                <h1 className="text-3xl font-bold mb-6 tracking-tight">{greeting()}</h1>
 
-                {loading ? (
-                    <div className="text-gray-500">Loading...</div>
-                ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                        {recentSongs.map(song => (
-                            <Card key={song.id} song={song} onPlay={playSong} />
-                        ))}
+                {/* Recently Added Section */}
+                <section className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold hover:underline cursor-pointer tracking-tight">Recently Added</h2>
+                        <span className="text-xs font-bold text-[#b3b3b3] hover:underline cursor-pointer tracking-widest hover:text-white">SHOW ALL</span>
                     </div>
-                )}
-            </section>
+
+                    {loading ? (
+                        <div className="text-gray-500">Loading...</div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                            {recentSongs.length > 0 ? recentSongs.map(song => (
+                                <Card key={song.id} song={song} onPlay={playSong} />
+                            )) : (
+                                <div className="col-span-full py-12 text-gray-500 text-center bg-[#181818]/50 rounded-lg border border-dashed border-gray-700">
+                                    No music uploaded yet. Go to Library to add some songs!
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+            </div>
         </div>
     );
 };
