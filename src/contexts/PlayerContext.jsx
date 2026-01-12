@@ -64,7 +64,23 @@ export function PlayerProvider({ children }) {
                 audioRef.current.currentTime = 0;
                 audioRef.current.play();
             } else {
-                playNext();
+                // Play next song in queue
+                if (queue.length > 0) {
+                    if (currentIndex < queue.length - 1) {
+                        const nextIndex = currentIndex + 1;
+                        setCurrentIndex(nextIndex);
+                        setCurrentSong(queue[nextIndex]);
+                        setIsPlaying(true);
+                    } else if (repeatMode === 'all') {
+                        // Loop back to start
+                        setCurrentIndex(0);
+                        setCurrentSong(queue[0]);
+                        setIsPlaying(true);
+                    } else {
+                        setIsPlaying(false);
+                        audioRef.current.currentTime = 0;
+                    }
+                }
             }
         };
 
@@ -72,7 +88,7 @@ export function PlayerProvider({ children }) {
         return () => {
             audioRef.current.removeEventListener('ended', handleEnded);
         };
-    }, [repeatMode]);
+    }, [repeatMode, queue, currentIndex]);
 
     // Sync volume state with audio element
     useEffect(() => {
