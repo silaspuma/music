@@ -3,10 +3,12 @@ import { Settings as SettingsIcon, Palette, Download, Upload } from 'lucide-reac
 import { useTheme } from '../contexts/ThemeContext';
 import { getSongs } from '../services/musicService';
 import { getPlaylists } from '../services/playlistService';
+import CustomThemeModal from '../components/CustomThemeModal';
 
 const Settings = () => {
-    const { currentTheme, setCurrentTheme, themes } = useTheme();
+    const { currentTheme, setCurrentTheme, themes, customTheme, saveCustomTheme } = useTheme();
     const [exportStatus, setExportStatus] = useState('');
+    const [showCustomThemeModal, setShowCustomThemeModal] = useState(false);
 
     const handleExportData = async () => {
         try {
@@ -144,6 +146,20 @@ const Settings = () => {
                                 );
                             })}
                         </div>
+                        <button
+                            onClick={() => setShowCustomThemeModal(true)}
+                            className="mt-6 bg-gradient-to-r from-[#1ed760] to-[#1aa34a] hover:from-[#1fdf64] hover:to-[#1bb350] text-black font-bold py-2 px-6 rounded-full transition flex items-center gap-2"
+                        >
+                            <Palette size={16} />
+                            Create Custom Theme
+                        </button>
+                        {customTheme && (
+                            <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg">
+                                <p className="text-sm text-[#b3b3b3]">
+                                    Custom theme active: <span className="text-[#1ed760] font-bold">{customTheme.name}</span>
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -175,7 +191,7 @@ const Settings = () => {
                             <div className="border-t border-[#282828] pt-4">
                                 <h3 className="font-bold mb-2">Import Library</h3>
                                 <p className="text-sm text-[#b3b3b3] mb-3">
-                                    Import a previously exported library file. Note: This will display the data but won't upload to Firebase (requires additional implementation).
+                                    Import a previously exported library file. Note: This will display the data but won't upload to our servers!
                                 </p>
                                 <button
                                     onClick={handleImportData}
@@ -203,12 +219,23 @@ const Settings = () => {
                                     and enjoy a beautiful, feature-rich music player.
                                 </p>
                                 <p className="text-sm text-[#b3b3b3]">
-                                    Version 1.0.0 • Made with ❤️ by the community
+                                    Version 1.1.2 • Made with ❤️ by silas
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Custom Theme Modal */}
+                {showCustomThemeModal && (
+                    <CustomThemeModal
+                        onClose={() => setShowCustomThemeModal(false)}
+                        onSave={(theme) => {
+                            saveCustomTheme(theme);
+                            setShowCustomThemeModal(false);
+                        }}
+                    />
+                )}
             </div>
         </div>
     );
