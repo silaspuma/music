@@ -44,7 +44,7 @@ const Player = () => {
     if (!currentSong) return null;
 
     return (
-        <div className="h-[90px] bg-[#181818] border-t border-[#282828] text-white px-4 flex items-center justify-between fixed bottom-0 w-full z-50">
+        <div className="h-[90px] bg-[#181818] border-t border-[#282828] text-white px-4 md:px-6 flex items-center justify-between fixed bottom-0 left-0 right-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.45)]">
 
             {/* Left: Song Info */}
             <div className="flex items-center w-[30%] min-w-[180px]">

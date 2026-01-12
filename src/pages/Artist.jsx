@@ -10,7 +10,7 @@ const Artist = () => {
     const { name } = useParams();
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { playSong } = usePlayer();
+    const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchArtistSongs = async () => {
@@ -26,7 +26,7 @@ const Artist = () => {
 
     const handlePlayAll = () => {
         if (songs.length > 0) {
-            playSong(songs[0]);
+            playQueue(songs, 0);
         }
     };
 
@@ -69,7 +69,7 @@ const Artist = () => {
                             key={song.id}
                             song={song}
                             index={index}
-                            onPlay={(s) => playSong(s)}
+                            onPlay={(_s, i) => playQueue(songs, i)}
                         />
                     ))}
                 </div>

@@ -9,7 +9,7 @@ const Library = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
-    const { playSong } = usePlayer();
+    const { playQueue } = usePlayer();
 
     const fetchSongs = async () => {
         setLoading(true);
@@ -42,8 +42,8 @@ const Library = () => {
         }
     };
 
-    const handlePlay = (song) => {
-        playSong(song);
+    const handlePlay = (_song, index) => {
+        playQueue(songs, index);
     };
 
     return (

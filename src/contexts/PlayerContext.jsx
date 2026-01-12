@@ -56,23 +56,19 @@ export function PlayerProvider({ children }) {
     }, [isPlaying, currentSong]);
 
     const playSong = (song) => {
-        // If clicking a new song, make a simple queue of 1 or handle context
-        // For now, simpler implementation: just play the song, add to 1-item queue if not there?
-        // Better: We usually pass the whole context (artist list, playlist) to playSong.
-        // For MVP: Just play; we'll handle queue management separately.
+        if (!song) return;
         setCurrentSong(song);
-        // If the song is already in the queue, find index. If not, replace queue or add?
-        // Let's adopt a "Play logic": If playing from a list, set that list as queue.
-        // For now, simpler:
         setQueue([song]);
         setCurrentIndex(0);
         setIsPlaying(true);
     };
 
     const playQueue = (newQueue, startIndex = 0) => {
+        if (!newQueue || newQueue.length === 0) return;
+        const safeIndex = Math.min(Math.max(startIndex, 0), newQueue.length - 1);
         setQueue(newQueue);
-        setCurrentIndex(startIndex);
-        setCurrentSong(newQueue[startIndex]);
+        setCurrentIndex(safeIndex);
+        setCurrentSong(newQueue[safeIndex]);
         setIsPlaying(true);
     };
 
@@ -89,8 +85,8 @@ export function PlayerProvider({ children }) {
             setCurrentSong(queue[nextIndex]);
             setIsPlaying(true);
         } else {
-            // End of queue
             setIsPlaying(false);
+            audioRef.current.currentTime = 0;
         }
     };
 

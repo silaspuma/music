@@ -9,7 +9,7 @@ const Album = () => {
     const { name } = useParams();
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { playSong } = usePlayer();
+    const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchAlbumSongs = async () => {
@@ -56,7 +56,10 @@ const Album = () => {
 
             <div className="relative z-10 px-8 py-6 bg-[#121212]/40 backdrop-blur-3xl">
                 <div className="flex items-center gap-6 mb-8">
-                    <button className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
+                    <button
+                        className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]"
+                        onClick={() => songs.length && playQueue(songs, 0)}
+                    >
                         <Play fill="currentColor" size={28} />
                     </button>
                     <button className="text-[#b3b3b3] hover:text-white transition-colors"><Heart size={32} /></button>
@@ -77,7 +80,7 @@ const Album = () => {
                             key={song.id}
                             song={song}
                             index={index}
-                            onPlay={(s) => playSong(s)}
+                            onPlay={(_s, i) => playQueue(songs, i)}
                         />
                     ))}
                 </div>

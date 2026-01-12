@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, Clock3, Heart, MoreHorizontal } from 'lucide-react';
+import { Play, Pause, Heart, MoreHorizontal } from 'lucide-react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Link } from 'react-router-dom';
 
@@ -13,7 +13,7 @@ const SongRow = ({ song, index, onPlay }) => {
         if (isCurrent) {
             togglePlay();
         } else {
-            onPlay(song);
+            onPlay(song, index);
         }
     };
 

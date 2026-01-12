@@ -3,10 +3,10 @@ import { getSongs } from '../services/musicService';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play } from 'lucide-react';
 
-const Card = ({ song, onPlay }) => (
+const Card = ({ song, index, onPlay }) => (
     <div
         className="bg-[#181818] p-4 rounded-[6px] hover:bg-[#282828] transition-all duration-300 group cursor-pointer relative"
-        onClick={() => onPlay(song)}
+        onClick={() => onPlay(song, index)}
     >
         <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-[6px] overflow-hidden">
             {song.imageUrl ? (
@@ -26,7 +26,7 @@ const Card = ({ song, onPlay }) => (
 const Home = () => {
     const [recentSongs, setRecentSongs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { playSong } = usePlayer();
+    const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchRecent = async () => {
@@ -63,8 +63,8 @@ const Home = () => {
                         <div className="text-gray-500">Loading...</div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                            {recentSongs.length > 0 ? recentSongs.map(song => (
-                                <Card key={song.id} song={song} onPlay={playSong} />
+                            {recentSongs.length > 0 ? recentSongs.map((song, index) => (
+                                <Card key={song.id} song={song} index={index} onPlay={(_s, i) => playQueue(recentSongs, i)} />
                             )) : (
                                 <div className="col-span-full py-12 text-gray-500 text-center bg-[#181818]/50 rounded-lg border border-dashed border-gray-700">
                                     No music uploaded yet. Go to Library to add some songs!

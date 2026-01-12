@@ -8,7 +8,7 @@ const Search = () => {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { playSong } = usePlayer();
+    const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -65,7 +65,7 @@ const Search = () => {
                                         key={song.id}
                                         song={song}
                                         index={index}
-                                        onPlay={(s) => playSong(s)}
+                                        onPlay={(_s, i) => playQueue(results, i)}
                                     />
                                 ))}
                             </>
