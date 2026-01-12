@@ -1,16 +1,114 @@
-# React + Vite
+# 🐆 Pumafy - Community Music Library
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Pumafy** is a community music library you can access from anywhere. Upload your music, create playlists, track your listening stats, and enjoy a beautiful Spotify-inspired interface with powerful features.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Features
+- 🎵 **Upload & Play Music** - Extract metadata from MP3 files automatically
+- 📝 **Playlists** - Create custom playlists with covers and descriptions
+- ❤️ **Liked Songs** - Save your favorite tracks
+- 🔀 **Shuffle & Repeat** - Full playback controls with multiple repeat modes
+- 🎯 **Queue Management** - View and manage your playback queue
+- 📊 **Listening Stats** - Track your top songs, artists, and listening time
+- 🕐 **Recently Played** - View your listening history
+- 🔍 **Smart Search** - Filter by artist, album, or all content
+- 📱 **PWA Support** - Install as an app on iOS/Android
 
-## React Compiler
+### Advanced Features
+- ⌨️ **Keyboard Shortcuts** - Space (play/pause), arrows (navigation), S (shuffle), R (repeat)
+- 😴 **Sleep Timer** - Auto-pause after 15/30/45/60 minutes
+- 🎨 **Custom Themes** - 5 color schemes (Dark, Light, Ocean Blue, Purple Dream, Forest Green)
+- 📤 **Export/Import** - Backup your library as JSON
+- 🔄 **Duplicate Detection** - Prevents re-uploading the same songs
+- 🎚️ **Sort & Filter** - Organize by date, title, artist, or play count
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📱 Install as PWA on iOS
 
-## Expanding the ESLint configuration
+1. Open Pumafy in **Safari** on your iPhone/iPad
+2. Tap the **Share** button (square with arrow pointing up)
+3. Scroll down and tap **"Add to Home Screen"**
+4. Tap **"Add"** in the top right corner
+5. Pumafy will now appear on your home screen like a native app!
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 16+
+- Firebase account with Firestore and Storage enabled
+
+### Installation
+
+```bash
+npm install
+```
+
+### Firebase Setup
+1. Create a Firebase project
+2. Enable Firestore Database
+3. Enable Firebase Storage
+4. Copy your config to `src/firebase.config.js`
+
+### Development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+npm run preview
+```
+
+## 🎮 Keyboard Shortcuts
+
+- **Space** - Play/Pause
+- **→** - Next track (Shift+→: Seek forward 10s)
+- **←** - Previous track (Shift+←: Seek backward 10s)
+- **↑** - Volume up
+- **↓** - Volume down
+- **S** - Toggle shuffle
+- **R** - Cycle repeat modes (Off → All → One)
+
+## 🎨 Themes
+
+Choose from 5 beautiful themes in Settings:
+- 🌑 Dark (Default)
+- ☀️ Light
+- 🌊 Ocean Blue
+- 💜 Purple Dream
+- 🌲 Forest Green
+
+## 📊 Stats & Analytics
+
+- Total plays counter
+- Total listening time
+- Top 10 songs
+- Top 10 artists
+- Recently played history
+
+## 🛠️ Tech Stack
+
+- **React 19** - UI framework
+- **Vite** - Build tool
+- **Firebase** - Backend (Firestore + Storage)
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icons
+- **music-metadata-browser** - MP3 metadata extraction
+- **Media Session API** - Lock screen controls
+
+## 📄 License
+
+MIT License - Feel free to use this project for your own purposes!
+
+## 🤝 Contributing
+
+Community music library means community contributions! Feel free to submit issues or pull requests.
+
+---
+
+Made with ❤️ by the Pumafy community

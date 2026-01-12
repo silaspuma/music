@@ -50,7 +50,8 @@ const Home = () => {
             <div className="absolute top-0 left-0 w-full h-[332px] bg-gradient-to-b from-[#222222] to-[#121212] z-0 pointer-events-none"></div>
 
             <div className="relative z-10 p-4 sm:p-6 md:p-8">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6 tracking-tight">{greeting()}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2 tracking-tight">{greeting()}</h1>
+                <p className="text-sm text-[#b3b3b3] mb-6">Welcome to Pumafy - Your community music library, accessible anywhere 🐆</p>
 
                 {/* Recently Added Section */}
                 <section className="mb-8">

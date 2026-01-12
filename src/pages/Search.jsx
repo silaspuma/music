@@ -4,23 +4,48 @@ import { searchSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 
+import React, { useState, useEffect } from 'react';
+import { Search as SearchIcon, Filter, X } from 'lucide-react';
+import { searchSongs } from '../services/musicService';
+import SongRow from '../components/SongRow';
+import { usePlayer } from '../contexts/PlayerContext';
+
 const Search = () => {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [filterType, setFilterType] = useState("all"); // all, artist, album
+    const [showFilters, setShowFilters] = useState(false);
     const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchResults = async () => {
             setLoading(true);
             const data = await searchSongs(query);
-            setResults(data);
+            
+            // Apply filter
+            let filtered = data;
+            if (filterType !== "all" && query) {
+                const lowerQuery = query.toLowerCase();
+                if (filterType === "artist") {
+                    filtered = data.filter(song => song.artist.toLowerCase().includes(lowerQuery));
+                } else if (filterType === "album") {
+                    filtered = data.filter(song => song.album.toLowerCase().includes(lowerQuery));
+                }
+            }
+            
+            setResults(filtered);
             setLoading(false);
         };
 
         const debounce = setTimeout(fetchResults, 300);
         return () => clearTimeout(debounce);
-    }, [query]);
+    }, [query, filterType]);
+
+    const clearFilters = () => {
+        setFilterType("all");
+        setShowFilters(false);
+    };
 
     return (
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
@@ -29,15 +54,68 @@ const Search = () => {
 
             <div className="relative z-10 p-4 sm:p-6 md:p-8">
                 <h1 className="text-xl sm:text-2xl font-bold mb-6 tracking-tight">Search</h1>
-                <div className="relative mb-8 max-w-[400px]">
-                    <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#121212] z-10" size={20} />
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="What do you want to listen to?"
-                        className="w-full bg-white text-black rounded-full pl-12 pr-4 py-3 text-sm font-medium placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white border border-transparent shadow-sm hover:bg-[#f0f0f0] transition-colors"
-                    />
+                
+                <div className="mb-8 max-w-[600px]">
+                    <div className="relative mb-4">
+                        <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#121212] z-10" size={20} />
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="What do you want to listen to?"
+                            className="w-full bg-white text-black rounded-full pl-12 pr-12 py-3 text-sm font-medium placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white border border-transparent shadow-sm hover:bg-[#f0f0f0] transition-colors"
+                        />
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-[#121212] hover:text-[#1ed760] transition ${filterType !== 'all' ? 'text-[#1ed760]' : ''}`}
+                        >
+                            <Filter size={20} />
+                        </button>
+                    </div>
+
+                    {/* Filter Pills */}
+                    {showFilters && (
+                        <div className="flex gap-2 mb-4 animate-fadeIn">
+                            <button
+                                onClick={() => setFilterType("all")}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                                    filterType === "all" 
+                                        ? "bg-white text-black" 
+                                        : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                                }`}
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => setFilterType("artist")}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                                    filterType === "artist" 
+                                        ? "bg-white text-black" 
+                                        : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                                }`}
+                            >
+                                Artist
+                            </button>
+                            <button
+                                onClick={() => setFilterType("album")}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                                    filterType === "album" 
+                                        ? "bg-white text-black" 
+                                        : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                                }`}
+                            >
+                                Album
+                            </button>
+                            {filterType !== "all" && (
+                                <button
+                                    onClick={clearFilters}
+                                    className="px-4 py-2 rounded-full text-sm font-medium bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition flex items-center gap-2"
+                                >
+                                    <X size={16} /> Clear
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {loading ? (

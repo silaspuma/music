@@ -1,6 +1,6 @@
 import { db, storage } from '../firebase.config';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, where, increment, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, where, increment, updateDoc, limit } from 'firebase/firestore';
 import * as mm from 'music-metadata-browser';
 
 export const uploadSong = async (file) => {
@@ -172,6 +172,12 @@ export const trackPlay = async (songId) => {
             playCount: increment(1),
             lastPlayed: new Date()
         });
+
+        // Add to recently played
+        await addDoc(collection(db, "recentlyPlayed"), {
+            songId,
+            playedAt: new Date()
+        });
     } catch (error) {
         console.error("Error tracking play: ", error);
     }
@@ -252,6 +258,48 @@ export const getLikedSongs = async () => {
         
         // Filter to only liked songs
         return allSongs.filter(song => likedSongIds.includes(song.id));
+    } catch (error) {
+        console.error("Error getting liked songs: ", error);
+        throw error;
+    }
+};
+
+export const getRecentlyPlayed = async (limit = 50) => {
+    try {
+        const q = query(
+            collection(db, "recentlyPlayed"), 
+            orderBy("playedAt", "desc"), 
+            limit(limit)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        const plays = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        // Get unique song IDs (recent first, no duplicates)
+        const songIds = [];
+        const seenIds = new Set();
+        for (const play of plays) {
+            if (!seenIds.has(play.songId)) {
+                songIds.push(play.songId);
+                seenIds.add(play.songId);
+            }
+        }
+        
+        // Get all songs
+        const allSongs = await getSongs();
+        
+        // Return songs in recently played order
+        return songIds
+            .map(id => allSongs.find(song => song.id === id))
+            .filter(song => song !== undefined);
+    } catch (error) {
+        console.error("Error getting recently played: ", error);
+        return [];
+    }
+};
     } catch (error) {
         console.error("Error getting liked songs: ", error);
         return [];

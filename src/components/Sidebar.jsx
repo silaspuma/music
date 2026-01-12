@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Library, PlusSquare, Heart, Music } from 'lucide-react';
+import { Home, Search, Library, PlusSquare, Heart, Music, Clock, BarChart3, Settings } from 'lucide-react';
 import { createPlaylist, getPlaylists } from '../services/playlistService';
 
 const Sidebar = ({ onNavigate }) => {
@@ -37,10 +37,10 @@ const Sidebar = ({ onNavigate }) => {
         <div className="w-[320px] bg-[#000000e6] h-full flex flex-col pt-6 pb-3 text-[#b3b3b3] gap-y-3 sticky top-0 border-r border-[#181818]">
             {/* Logo Area */}
             <div className="text-white mb-6 px-6 flex items-center gap-3">
-                <div className="relative h-10 w-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg">
-                    <Music size={22} fill="currentColor" className="absolute" />
+                <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg">
+                    <span className="text-2xl">🐆</span>
                 </div>
-                <h1 className="text-2xl font-black tracking-tight">Spotify</h1>
+                <h1 className="text-2xl font-black tracking-tight">Pumafy</h1>
             </div>
 
             {/* Main Nav */}
@@ -66,6 +66,27 @@ const Sidebar = ({ onNavigate }) => {
                         icon={<div className="bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
                         label="Liked Songs" 
                         active={location.pathname === '/liked'} 
+                        onNavigate={onNavigate} 
+                    />
+                    <NavItem 
+                        to="/recently-played" 
+                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Clock size={14} /></div>} 
+                        label="Recently Played" 
+                        active={location.pathname === '/recently-played'} 
+                        onNavigate={onNavigate} 
+                    />
+                    <NavItem 
+                        to="/stats" 
+                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><BarChart3 size={14} /></div>} 
+                        label="Your Stats" 
+                        active={location.pathname === '/stats'} 
+                        onNavigate={onNavigate} 
+                    />
+                    <NavItem 
+                        to="/settings" 
+                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Settings size={14} /></div>} 
+                        label="Settings" 
+                        active={location.pathname === '/settings'} 
                         onNavigate={onNavigate} 
                     />
                 </div>

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getPlaylistById, updatePlaylist, deletePlaylist } from '../services/playlistService';
 import { usePlayer } from '../contexts/PlayerContext';
 import SongRow from '../components/SongRow';
-import { Play, MoreHorizontal, Pencil, Trash2, Upload } from 'lucide-react';
+import { Play, MoreHorizontal, Pencil, Trash2, Upload, Shuffle } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase.config';
 
@@ -34,6 +34,13 @@ const Playlist = () => {
     const handlePlayAll = () => {
         if (playlist?.songs?.length > 0) {
             playQueue(playlist.songs, 0);
+        }
+    };
+
+    const handleShuffle = () => {
+        if (playlist?.songs?.length > 0) {
+            const shuffled = [...playlist.songs].sort(() => Math.random() - 0.5);
+            playQueue(shuffled, 0);
         }
     };
 
@@ -145,7 +152,7 @@ const Playlist = () => {
                         )
                     )}
                     <div className="text-sm font-bold text-white mt-2">
-                        <span>{playlist.songs?.length || 0} songs</span>
+                        <span>{playlist.songs?.length || 0} songs, {Math.floor(playlist.songs?.reduce((sum, song) => sum + (song.duration || 0), 0) / 60) || 0} min</span>
                     </div>
                 </div>
             </div>
@@ -160,6 +167,14 @@ const Playlist = () => {
                         className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Play fill="currentColor" size={28} />
+                    </button>
+                    <button
+                        onClick={handleShuffle}
+                        disabled={!playlist.songs?.length}
+                        className="text-[#b3b3b3] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Shuffle"
+                    >
+                        <Shuffle size={32} />
                     </button>
 
                     {editing ? (

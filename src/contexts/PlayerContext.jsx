@@ -6,10 +6,16 @@ const PlayerContext = createContext();
 export function PlayerProvider({ children }) {
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [volume, setVolume] = useState(1); // 0 to 1
+    const [volume, setVolume] = useState(1);
     const [queue, setQueue] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
+    const [isShuffle, setIsShuffle] = useState(false);
+    const [repeatMode, setRepeatMode] = useState('off'); // 'off', 'one', 'all'
+    const [originalQueue, setOriginalQueue] = useState([]);
+    const [sleepTimer, setSleepTimer] = useState(null); // null or timestamp when to pause
+    const [sleepTimerMinutes, setSleepTimerMinutes] = useState(0); // minutes remaining
     const audioRef = useRef(new Audio());
+    const sleepTimerInterval = useRef(null);
 
     // Setup Media Session API for lock screen controls
     useEffect(() => {
@@ -51,18 +57,22 @@ export function PlayerProvider({ children }) {
     }, [currentSong, isPlaying]);
 
     useEffect(() => {
-        // Configure audio element
         audioRef.current.volume = volume;
 
         const handleEnded = () => {
-            playNext();
+            if (repeatMode === 'one') {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play();
+            } else {
+                playNext();
+            }
         };
 
         audioRef.current.addEventListener('ended', handleEnded);
         return () => {
             audioRef.current.removeEventListener('ended', handleEnded);
         };
-    }, []); // Run once on mount
+    }, [repeatMode]);
 
     // Sync volume state with audio element
     useEffect(() => {
@@ -112,10 +122,38 @@ export function PlayerProvider({ children }) {
     const playQueue = (newQueue, startIndex = 0) => {
         if (!newQueue || newQueue.length === 0) return;
         const safeIndex = Math.min(Math.max(startIndex, 0), newQueue.length - 1);
+        setOriginalQueue(newQueue);
         setQueue(newQueue);
         setCurrentIndex(safeIndex);
         setCurrentSong(newQueue[safeIndex]);
         setIsPlaying(true);
+    };
+
+    const toggleShuffle = () => {
+        if (!isShuffle) {
+            // Turn shuffle on
+            if (queue.length > 1) {
+                const currentSongData = currentSong;
+                // Create shuffled queue, keeping current song at current position
+                const otherSongs = queue.filter(s => s.id !== currentSongData?.id);
+                const shuffled = [...otherSongs].sort(() => Math.random() - 0.5);
+                
+                // Insert current song at the beginning
+                const newQueue = currentSongData ? [currentSongData, ...shuffled] : shuffled;
+                setQueue(newQueue);
+                setCurrentIndex(0);
+            }
+            setIsShuffle(true);
+        } else {
+            // Turn shuffle off - restore original queue
+            if (originalQueue.length > 0) {
+                const currentSongData = currentSong;
+                const originalIndex = originalQueue.findIndex(s => s.id === currentSongData?.id);
+                setQueue(originalQueue);
+                setCurrentIndex(originalIndex >= 0 ? originalIndex : 0);
+            }
+            setIsShuffle(false);
+        }
     };
 
     const togglePlay = () => {
@@ -125,14 +163,21 @@ export function PlayerProvider({ children }) {
     };
 
     const playNext = () => {
-        if (queue.length > 0 && currentIndex < queue.length - 1) {
-            const nextIndex = currentIndex + 1;
-            setCurrentIndex(nextIndex);
-            setCurrentSong(queue[nextIndex]);
-            setIsPlaying(true);
-        } else {
-            setIsPlaying(false);
-            audioRef.current.currentTime = 0;
+        if (queue.length > 0) {
+            if (currentIndex < queue.length - 1) {
+                const nextIndex = currentIndex + 1;
+                setCurrentIndex(nextIndex);
+                setCurrentSong(queue[nextIndex]);
+                setIsPlaying(true);
+            } else if (repeatMode === 'all') {
+                // Loop back to start
+                setCurrentIndex(0);
+                setCurrentSong(queue[0]);
+                setIsPlaying(true);
+            } else {
+                setIsPlaying(false);
+                audioRef.current.currentTime = 0;
+            }
         }
     };
 
@@ -156,6 +201,124 @@ export function PlayerProvider({ children }) {
         }
     }
 
+    const toggleRepeat = () => {
+        setRepeatMode(mode => {
+            if (mode === 'off') return 'all';
+            if (mode === 'all') return 'one';
+            return 'off';
+        });
+    };
+
+    const removeFromQueue = (index) => {
+        const newQueue = queue.filter((_, i) => i !== index);
+        setQueue(newQueue);
+        if (index < currentIndex) {
+            setCurrentIndex(currentIndex - 1);
+        }
+    };
+
+    const clearQueue = () => {
+        const current = currentSong ? [currentSong] : [];
+        setQueue(current);
+        setCurrentIndex(0);
+    };
+
+    const addToQueue = (song) => {
+        setQueue([...queue, song]);
+    };
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyPress = (e) => {
+            // Don't trigger if typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    if (currentSong) togglePlay();
+                    break;
+                case 'ArrowRight':
+                    if (e.shiftKey) {
+                        // Seek forward 10s
+                        audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioRef.current.duration);
+                    } else {
+                        playNext();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (e.shiftKey) {
+                        // Seek backward 10s
+                        audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+                    } else {
+                        playPrevious();
+                    }
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    setVolume(Math.min(volume + 0.1, 1));
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    setVolume(Math.max(volume - 0.1, 0));
+                    break;
+                case 's':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                    } else {
+                        toggleShuffle();
+                    }
+                    break;
+                case 'r':
+                    toggleRepeat();
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [currentSong, isPlaying, volume]);
+
+    // Sleep timer effect
+    useEffect(() => {
+        if (sleepTimer) {
+            sleepTimerInterval.current = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.ceil((sleepTimer - now) / 1000 / 60);
+                setSleepTimerMinutes(Math.max(0, remaining));
+
+                if (now >= sleepTimer) {
+                    setIsPlaying(false);
+                    setSleepTimer(null);
+                    setSleepTimerMinutes(0);
+                    clearInterval(sleepTimerInterval.current);
+                }
+            }, 1000);
+
+            return () => {
+                if (sleepTimerInterval.current) {
+                    clearInterval(sleepTimerInterval.current);
+                }
+            };
+        } else {
+            if (sleepTimerInterval.current) {
+                clearInterval(sleepTimerInterval.current);
+            }
+            setSleepTimerMinutes(0);
+        }
+    }, [sleepTimer]);
+
+    const setSleepTimerDuration = (minutes) => {
+        if (minutes === 0) {
+            setSleepTimer(null);
+            setSleepTimerMinutes(0);
+        } else {
+            const endTime = Date.now() + (minutes * 60 * 1000);
+            setSleepTimer(endTime);
+            setSleepTimerMinutes(minutes);
+        }
+    };
+
     const value = {
         currentSong,
         isPlaying,
@@ -167,7 +330,19 @@ export function PlayerProvider({ children }) {
         playNext,
         playPrevious,
         audioRef,
-        seek
+        seek,
+        isShuffle,
+        toggleShuffle,
+        repeatMode,
+        toggleRepeat,
+        queue,
+        currentIndex,
+        removeFromQueue,
+        clearQueue,
+        addToQueue,
+        sleepTimer,
+        sleepTimerMinutes,
+        setSleepTimerDuration
     };
 
     return (
