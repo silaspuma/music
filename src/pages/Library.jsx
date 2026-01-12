@@ -30,17 +30,43 @@ const Library = () => {
         const files = Array.from(e.target.files || []);
         if (!files.length) return;
 
-        try {
-            setUploading(true);
-            const uploadPromises = files.map(file => uploadSong(file));
-            await Promise.all(uploadPromises);
-            setUploading(false);
-            fetchSongs();
-            alert(`Successfully uploaded ${files.length} song(s)!`);
-        } catch (error) {
-            console.error("Upload failed", error);
-            setUploading(false);
-            alert(`Upload failed: ${error.message || 'Please try again.'}`);
+        setUploading(true);
+        let successCount = 0;
+        let skipCount = 0;
+        const skippedSongs = [];
+
+        for (const file of files) {
+            try {
+                await uploadSong(file);
+                successCount++;
+            } catch (error) {
+                if (error.message.includes('already exists')) {
+                    skipCount++;
+                    const songName = file.name.replace(/\.[^/.]+$/, "");
+                    skippedSongs.push(songName);
+                    console.log(`Skipped duplicate: ${songName}`);
+                } else {
+                    console.error(`Failed to upload ${file.name}:`, error);
+                    alert(`Failed to upload ${file.name}: ${error.message}`);
+                }
+            }
+        }
+
+        setUploading(false);
+        fetchSongs();
+
+        let message = '';
+        if (successCount > 0) {
+            message += `Successfully uploaded ${successCount} song(s)!`;
+        }
+        if (skipCount > 0) {
+            message += `\n\nSkipped ${skipCount} duplicate song(s):\n${skippedSongs.slice(0, 5).join('\n')}`;
+            if (skippedSongs.length > 5) {
+                message += `\n...and ${skippedSongs.length - 5} more`;
+            }
+        }
+        if (message) {
+            alert(message);
         }
     };
 

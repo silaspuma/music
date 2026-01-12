@@ -31,6 +31,19 @@ export const uploadSong = async (file) => {
         
         console.log("Extracted metadata - Title:", title, "Artist:", artist, "Album:", album, "Duration:", duration);
         
+        // Check for duplicates
+        console.log("Checking for duplicates...");
+        const allSongs = await getSongs();
+        const duplicate = allSongs.find(
+            song => song.title.toLowerCase() === title.toLowerCase() && 
+                    song.artist.toLowerCase() === artist.toLowerCase()
+        );
+        
+        if (duplicate) {
+            console.warn("Duplicate song found:", duplicate);
+            throw new Error(`Song "${title}" by ${artist} already exists in your library`);
+        }
+        
         // Extract cover art
         if (common.picture && common.picture.length > 0) {
             console.log("Found cover art, uploading...");
