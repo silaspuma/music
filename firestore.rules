@@ -77,10 +77,9 @@ service cloud.firestore {
     match /listeningSessions/{userId} {
       // Admins can read all sessions, users can read their own
       allow read: if isAdmin() || isOwner(userId);
-      // Users can create/update their own session
-      allow create, update: if isOwner(userId);
-      // Admins can also update any session (for remote control)
-      allow update: if isAdmin();
+      // Users can create/update their own session, admins can update any session
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
       // Users can delete their own session
       allow delete: if isOwner(userId);
     }
