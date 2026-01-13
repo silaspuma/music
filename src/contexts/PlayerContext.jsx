@@ -185,6 +185,18 @@ export function PlayerProvider({ children }) {
 
     // Track listening time
     useEffect(() => {
+        // Helper to save elapsed listening time
+        const saveListeningTime = () => {
+            if (listeningStartTime.current && currentUser) {
+                const elapsed = Date.now() - listeningStartTime.current;
+                const minutes = elapsed / (1000 * 60);
+                if (minutes > 0) {
+                    updateListeningTime(minutes);
+                }
+                listeningStartTime.current = null;
+            }
+        };
+
         if (isPlaying && currentUser) {
             // Start tracking time
             listeningStartTime.current = Date.now();
@@ -204,26 +216,12 @@ export function PlayerProvider({ children }) {
             
             return () => {
                 clearInterval(interval);
-                // Update any remaining time when pausing
-                if (listeningStartTime.current && currentUser) {
-                    const elapsed = Date.now() - listeningStartTime.current;
-                    const minutes = elapsed / (1000 * 60);
-                    if (minutes > 0) {
-                        updateListeningTime(minutes);
-                    }
-                }
-                listeningStartTime.current = null;
+                // Update any remaining time when component unmounts or dependencies change
+                saveListeningTime();
             };
         } else {
             // Save any remaining time when pausing
-            if (listeningStartTime.current && currentUser) {
-                const elapsed = Date.now() - listeningStartTime.current;
-                const minutes = elapsed / (1000 * 60);
-                if (minutes > 0) {
-                    updateListeningTime(minutes);
-                }
-            }
-            listeningStartTime.current = null;
+            saveListeningTime();
         }
     }, [isPlaying, currentUser, updateListeningTime]);
 

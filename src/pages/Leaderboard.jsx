@@ -107,7 +107,7 @@ const Leaderboard = () => {
                                             )}
                                         </p>
                                         <p className={`text-sm ${user.rank <= 3 ? 'text-white/80' : 'text-[#a7a7a7]'}`}>
-                                            {Math.round(user.listeningMinutes).toLocaleString()} minutes
+                                            {Math.floor(user.listeningMinutes).toLocaleString()} minutes
                                         </p>
                                     </div>
 
