@@ -3,7 +3,7 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart } from 'lucide-react';
 import QueueView from './QueueView';
 import { toggleLikeSong, isLiked } from '../services/musicService';
-import { useAuth } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 const Player = () => {
     const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat } = usePlayer();
