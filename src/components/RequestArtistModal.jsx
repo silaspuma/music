@@ -15,7 +15,7 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
         let interval;
         if (isSubmitting) {
             const startTime = Date.now();
-            const duration = 15000; // 15 seconds
+            const duration = 10000; // 10 seconds
 
             interval = setInterval(() => {
                 const elapsed = Date.now() - startTime;
@@ -35,22 +35,25 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
     }, [isSubmitting]);
 
     const submitRequest = async () => {
-        if (!currentUser) {
-            alert('You must be logged in to submit a request.');
-            setIsSubmitting(false);
-            setProgress(0);
-            return;
-        }
-
         try {
-            await addDoc(collection(db, 'artistRequests'), {
+            const requestData = {
                 artistName: artistName.trim(),
-                requestedBy: currentUser.uid,
-                requestedByEmail: currentUser.email,
-                requestedByUsername: userProfile?.username || currentUser.email?.split('@')[0] || 'Unknown',
                 status: 'pending',
                 createdAt: serverTimestamp()
-            });
+            };
+
+            // Add user info if logged in, otherwise mark as anonymous
+            if (currentUser) {
+                requestData.requestedBy = currentUser.uid;
+                requestData.requestedByEmail = currentUser.email;
+                requestData.requestedByUsername = userProfile?.username || currentUser.email?.split('@')[0] || 'Anonymous';
+            } else {
+                requestData.requestedBy = 'anonymous';
+                requestData.requestedByEmail = 'anonymous';
+                requestData.requestedByUsername = 'Anonymous';
+            }
+
+            await addDoc(collection(db, 'artistRequests'), requestData);
             setSubmitted(true);
             setTimeout(() => {
                 handleClose();

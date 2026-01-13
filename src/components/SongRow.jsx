@@ -4,7 +4,6 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { deleteSong } from '../services/musicService';
-import { getPlaylists, addSongToPlaylist } from '../services/playlistService';
 import { isFavorite, toggleFavorite } from '../utils/favorites';
 
 const SongRow = ({ song, index, onPlay, onDelete }) => {
@@ -15,22 +14,10 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
     const [hover, setHover] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
-    const [playlists, setPlaylists] = useState([]);
-    const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const lists = await getPlaylists();
-                setPlaylists(lists);
-                
-                // Check if song is liked from localStorage
-                setIsLiked(isFavorite(song.id));
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-        fetchData();
+        // Check if song is liked from localStorage
+        setIsLiked(isFavorite(song.id));
     }, [song.id]);
 
     const handlePlayClick = () => {
@@ -44,17 +31,6 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
     const handleFavorite = () => {
         const newState = toggleFavorite(song.id);
         setIsLiked(newState);
-    };
-
-    const handleAddToPlaylist = async (playlistId) => {
-        try {
-            await addSongToPlaylist(playlistId, song);
-            alert(`Added "${song.title}" to playlist!`);
-            setShowPlaylistMenu(false);
-            setShowMenu(false);
-        } catch (error) {
-            alert(`Failed to add song to playlist: ${error.message}`);
-        }
     };
 
     const handleDelete = async () => {
@@ -196,35 +172,6 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                                 <Heart size={14} fill={isLiked ? 'currentColor' : 'none'} />
                                 {isLiked ? 'Remove from Favorites' : 'Add to Favorites'}
                             </button>
-                            
-                            {/* Add to Playlist Submenu */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowPlaylistMenu(!showPlaylistMenu)}
-                                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3e3e3e] transition-colors flex items-center justify-between"
-                                >
-                                    Add to Playlist
-                                    <span className="text-xs">→</span>
-                                </button>
-                                
-                                {showPlaylistMenu && (
-                                    <div className="absolute left-full top-0 mt-0 ml-2 w-48 bg-[#282828] rounded-lg shadow-lg z-50 py-2 border border-[#3e3e3e]">
-                                        {playlists.length > 0 ? (
-                                            playlists.map(playlist => (
-                                                <button
-                                                    key={playlist.id}
-                                                    onClick={() => handleAddToPlaylist(playlist.id)}
-                                                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3e3e3e] transition-colors"
-                                                >
-                                                    {playlist.name}
-                                                </button>
-                                            ))
-                                        ) : (
-                                            <div className="px-4 py-2 text-sm text-[#b3b3b3]">No playlists yet</div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
                             
                             <Link
                                 to={`/artist/${encodeURIComponent(song.artist)}`}
