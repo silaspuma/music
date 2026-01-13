@@ -12,6 +12,7 @@ import Artist from './pages/Artist';
 import Album from './pages/Album';
 import LikedSongs from './pages/LikedSongs';
 import Settings from './pages/Settings';
+import CurrentlyPlaying from './pages/CurrentlyPlaying';
 import { Menu, X } from 'lucide-react';
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<LikedSongs />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/currently-playing" element={<CurrentlyPlaying />} />
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:name" element={<Album />} />
               </Routes>
