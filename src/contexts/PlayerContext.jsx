@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { trackPlay } from '../services/musicService';
-import { updateListeningSession, clearListeningSession, updatePlayState, subscribeToListeningSessions } from '../services/listeningSessionService';
+import { updateListeningSession, clearListeningSession, updatePlayState } from '../services/listeningSessionService';
 import { useAuth } from './AuthContext';
 import AuthModal from '../components/AuthModal';
 import { doc, onSnapshot } from 'firebase/firestore';
