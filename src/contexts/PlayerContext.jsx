@@ -9,7 +9,7 @@ import { db } from '../firebase.config';
 const PlayerContext = createContext();
 
 export function PlayerProvider({ children }) {
-    const { currentUser, userProfile } = useAuth();
+    const { currentUser, userProfile, updateListeningTime } = useAuth();
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
@@ -23,6 +23,7 @@ export function PlayerProvider({ children }) {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const audioRef = useRef(new Audio());
     const sleepTimerInterval = useRef(null);
+    const listeningStartTime = useRef(null); // Track when listening started
 
     // Setup Media Session API for lock screen controls
     useEffect(() => {
@@ -170,9 +171,9 @@ export function PlayerProvider({ children }) {
             audioRef.current.play()
                 .then(() => {
                     setIsPlaying(true);
-                    // Track play in Firebase
-                    if (currentSong.id) {
-                        trackPlay(currentSong.id);
+                    // Track play in Firebase with userId
+                    if (currentSong.id && currentUser) {
+                        trackPlay(currentSong.id, currentUser.uid);
                     }
                 })
                 .catch(e => console.error("Error playing audio:", e));
@@ -180,7 +181,51 @@ export function PlayerProvider({ children }) {
             audioRef.current.pause();
             setIsPlaying(false);
         }
-    }, [currentSong]);
+    }, [currentSong, currentUser]);
+
+    // Track listening time
+    useEffect(() => {
+        if (isPlaying && currentUser) {
+            // Start tracking time
+            listeningStartTime.current = Date.now();
+            
+            // Update listening time every 30 seconds
+            const interval = setInterval(() => {
+                if (listeningStartTime.current && currentUser) {
+                    const elapsed = Date.now() - listeningStartTime.current;
+                    const minutes = elapsed / (1000 * 60);
+                    
+                    if (minutes >= 0.5) { // At least 30 seconds
+                        updateListeningTime(minutes);
+                        listeningStartTime.current = Date.now(); // Reset timer
+                    }
+                }
+            }, 30000); // Check every 30 seconds
+            
+            return () => {
+                clearInterval(interval);
+                // Update any remaining time when pausing
+                if (listeningStartTime.current && currentUser) {
+                    const elapsed = Date.now() - listeningStartTime.current;
+                    const minutes = elapsed / (1000 * 60);
+                    if (minutes > 0) {
+                        updateListeningTime(minutes);
+                    }
+                }
+                listeningStartTime.current = null;
+            };
+        } else {
+            // Save any remaining time when pausing
+            if (listeningStartTime.current && currentUser) {
+                const elapsed = Date.now() - listeningStartTime.current;
+                const minutes = elapsed / (1000 * 60);
+                if (minutes > 0) {
+                    updateListeningTime(minutes);
+                }
+            }
+            listeningStartTime.current = null;
+        }
+    }, [isPlaying, currentUser, updateListeningTime]);
 
     // Handle play/pause toggle
     useEffect(() => {

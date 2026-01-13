@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Search, Library, Heart, Settings, LogIn, Users } from 'lucide-react';
+import { Search, Library, Heart, Settings, LogIn, Users, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
@@ -23,6 +23,7 @@ const Sidebar = ({ onNavigate }) => {
             <div className="flex flex-col px-3 gap-1">
                 <NavItem to="/" icon={<Library size={26} />} label="All Songs" active={location.pathname === '/' || location.pathname === '/library'} onNavigate={onNavigate} />
                 <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} onNavigate={onNavigate} />
+                <NavItem to="/leaderboard" icon={<Trophy size={26} />} label="Leaderboard" active={location.pathname === '/leaderboard'} onNavigate={onNavigate} />
             </div>
 
             <div className="mt-4 pt-1 px-3 flex flex-col">

@@ -165,7 +165,7 @@ export const searchSongs = async (term) => {
     }
 };
 
-export const trackPlay = async (songId) => {
+export const trackPlay = async (songId, userId) => {
     try {
         const songRef = doc(db, "songs", songId);
         await updateDoc(songRef, {
@@ -173,11 +173,14 @@ export const trackPlay = async (songId) => {
             lastPlayed: new Date()
         });
 
-        // Add to recently played
-        await addDoc(collection(db, "recentlyPlayed"), {
-            songId,
-            playedAt: new Date()
-        });
+        // Add to recently played with userId
+        if (userId) {
+            await addDoc(collection(db, "recentlyPlayed"), {
+                songId,
+                userId,
+                playedAt: new Date()
+            });
+        }
     } catch (error) {
         console.error("Error tracking play: ", error);
     }
