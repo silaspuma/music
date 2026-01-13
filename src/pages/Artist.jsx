@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getSongs, getArtistStats } from '../services/musicService';
+import { getSongs } from '../services/musicService';
+import { getArtistTotalPlays, formatPlayCount } from '../utils/playCount';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Shuffle } from 'lucide-react';
@@ -8,7 +9,7 @@ import { Play, Shuffle } from 'lucide-react';
 const Artist = () => {
     const { name } = useParams();
     const [songs, setSongs] = useState([]);
-    const [stats, setStats] = useState({ monthlyListeners: 0 });
+    const [totalPlays, setTotalPlays] = useState(0);
     const [loading, setLoading] = useState(true);
     const { playQueue } = usePlayer();
 
@@ -18,11 +19,14 @@ const Artist = () => {
             const allSongs = await getSongs();
             const decodedName = decodeURIComponent(name);
             const artistSongs = allSongs.filter(s => s.artist === decodedName);
-            setSongs(artistSongs);
             
-            // Get artist stats
-            const artistStats = await getArtistStats(decodedName);
-            setStats(artistStats);
+            // Sort by play count (most popular first)
+            const sortedSongs = artistSongs.sort((a, b) => (b.playCount || 0) - (a.playCount || 0));
+            setSongs(sortedSongs);
+            
+            // Calculate total plays
+            const plays = getArtistTotalPlays(sortedSongs);
+            setTotalPlays(plays);
             
             setLoading(false);
         };
@@ -61,7 +65,7 @@ const Artist = () => {
                     <span className="flex items-center gap-2 text-xs font-bold tracking-widest text-white uppercase"><span className="bg-[#3d91f4] text-white p-[2px] rounded-full inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6"><svg role="img" height="12" width="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></span>Verified Artist</span>
                     <h1 className="text-4xl sm:text-6xl md:text-[96px] font-black tracking-tighter text-white leading-none mb-1 sm:mb-2 drop-shadow-lg">{decodeURIComponent(name)}</h1>
                     <div className="text-sm sm:text-md font-medium text-white drop-shadow-md">
-                        <span>{stats.monthlyListeners.toLocaleString()} monthly listeners</span>
+                        <span>{formatPlayCount(totalPlays)} total plays</span>
                     </div>
                 </div>
             </div>

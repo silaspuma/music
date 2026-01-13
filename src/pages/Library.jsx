@@ -193,14 +193,14 @@ const Library = () => {
             {/* Header / Gradient */}
             <div className="relative h-[180px] sm:h-[240px] md:h-[280px] w-full bg-gradient-to-b from-[#4000F4] to-[#121212] flex flex-col sm:flex-row items-end p-4 sm:p-6 md:p-8 gap-4 sm:gap-6">
                 <div className="relative z-10 h-[120px] sm:h-[160px] md:h-[192px] w-[120px] sm:w-[160px] md:w-[192px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-gradient-to-br from-[#450af5] to-[#c4efd9] shrink-0 rounded-lg">
-                    <span className="text-4xl sm:text-5xl md:text-6xl text-white opacity-50">♫</span>
+                    <Upload size={80} className="text-white opacity-50" />
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">
-                    <span className="uppercase text-xs font-bold tracking-wider text-white">Playlist</span>
-                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">All Songs</h1>
+                    <span className="uppercase text-xs font-bold tracking-wider text-white">Library</span>
+                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">Your Uploads</h1>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-white">
-                        <span className="cursor-pointer">User</span>
+                        <span className="cursor-pointer">{userProfile?.username || 'User'}</span>
                         <span className="font-normal text-[#b3b3b3]">• {songs.length} songs, {formattedDuration}</span>
                     </div>
                 </div>

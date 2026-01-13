@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { deleteSong } from '../services/musicService';
 import { isFavorite, toggleFavorite } from '../utils/favorites';
+import { formatPlayCount } from '../utils/playCount';
 
 const SongRow = ({ song, index, onPlay, onDelete }) => {
     const { currentSong, isPlaying, togglePlay, playNextInQueue } = usePlayer();
@@ -146,8 +147,11 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                 </Link>
             </div>
 
-            {/* Action Area (Duration + Heart + More) */}
+            {/* Action Area (Play Count + Duration + Heart + More) */}
             <div className="flex items-center justify-end gap-x-1 sm:gap-x-4 flex-shrink-0">
+                <span className="text-xs sm:text-sm text-[#b3b3b3] font-normal min-w-[40px] text-right hidden sm:block">
+                    {formatPlayCount(song.playCount || 0)}
+                </span>
                 <button
                     onClick={handleFavorite}
                     className={`transition-colors hidden sm:block ${isLiked ? 'text-[#ff6b1a]' : 'text-[#b3b3b3] hover:text-white'} ${hover ? 'visible' : 'invisible'}`}
