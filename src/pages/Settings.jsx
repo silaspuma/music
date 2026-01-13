@@ -260,7 +260,7 @@ const Settings = () => {
                             className="w-full bg-gradient-to-r from-[#ff6b1a] to-[#ff8c42] hover:from-[#ff8c42] hover:to-[#ff6b1a] text-white font-bold py-4 px-6 rounded-lg transition flex items-center justify-center gap-3"
                         >
                             <Music size={20} />
-                            Request Artist
+                            Request Album
                         </button>
                     </div>
                 )}
