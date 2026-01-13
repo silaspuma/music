@@ -1,41 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Library, Plus, Heart, Music, Clock, BarChart3, Settings, User, LogIn, Trophy } from 'lucide-react';
-import { createPlaylist, getPlaylists } from '../services/playlistService';
+import { Home, Search, Library, Heart, Settings, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
 const Sidebar = ({ onNavigate }) => {
-    const [playlists, setPlaylists] = useState([]);
-    const [playlistError, setPlaylistError] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const location = useLocation();
     const { currentUser, userProfile, logout } = useAuth();
-
-    useEffect(() => {
-        fetchPlaylists();
-    }, []);
-
-    const fetchPlaylists = async () => {
-        try {
-            const data = await getPlaylists();
-            setPlaylists(data);
-            setPlaylistError(false);
-        } catch (error) {
-            console.error('Failed to load playlists:', error);
-            setPlaylistError(true);
-            setPlaylists([]);
-        }
-    };
-
-    const handleCreatePlaylist = async () => {
-        const name = prompt("Enter playlist name:");
-        if (name) {
-            const description = prompt("Enter playlist description (optional):") || '';
-            await createPlaylist(name, description);
-            fetchPlaylists();
-        }
-    };
 
     return (
         <div className="w-[320px] bg-[#000000e6] h-full flex flex-col pt-6 pb-3 text-[#b3b3b3] gap-y-3 sticky top-0 border-r border-[#181818]">
@@ -56,27 +28,11 @@ const Sidebar = ({ onNavigate }) => {
 
             <div className="mt-4 pt-1 px-3 flex flex-col">
                 <div className="mb-2">
-                    <button
-                        onClick={handleCreatePlaylist}
-                        className="flex items-center gap-x-4 px-4 py-3 rounded-md hover:text-white transition-colors text-sm font-bold text-[#b3b3b3] w-full text-left group"
-                    >
-                        <div className="bg-[#b3b3b3] group-hover:bg-white transition-colors rounded-[3px] p-1 text-black">
-                            <Plus size={14} fill="currentColor" />
-                        </div>
-                        Create Playlist
-                    </button>
                     <NavItem 
                         to="/liked" 
                         icon={<div className="bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
                         label="Liked Songs" 
                         active={location.pathname === '/liked'} 
-                        onNavigate={onNavigate} 
-                    />
-                    <NavItem 
-                        to="/leaderboard" 
-                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Trophy size={14} /></div>} 
-                        label="Leaderboard" 
-                        active={location.pathname === '/leaderboard'} 
                         onNavigate={onNavigate} 
                     />
                     <NavItem 
@@ -124,30 +80,6 @@ const Sidebar = ({ onNavigate }) => {
                         </div>
                     </button>
                 )}
-            </div>
-
-            <div className="mx-6 border-t border-[#282828] mb-1"></div>
-
-            {/* Playlists Scroll Area */}
-            <div className="flex-1 overflow-y-auto px-6 custom-scrollbar pb-8">
-                <div className="flex flex-col gap-3">
-                    {playlistError ? (
-                        <div className="text-xs text-[#a7a7a7] italic">Unable to load playlists</div>
-                    ) : playlists.length === 0 ? (
-                        <div className="text-xs text-[#727272] italic">No playlists yet</div>
-                    ) : (
-                        playlists.map(playlist => (
-                            <NavLink
-                                key={playlist.id}
-                                to={`/playlist/${playlist.id}`}
-                                onClick={() => onNavigate?.()}
-                                className={({ isActive }) => `text-sm hover:text-white cursor-pointer truncate font-normal block py-1 ${isActive ? 'text-white' : 'text-[#b3b3b3]'}`}
-                            >
-                                {playlist.name}
-                            </NavLink>
-                        ))
-                    )}
-                </div>
             </div>
 
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />

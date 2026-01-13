@@ -1,20 +1,25 @@
-import { useState } from 'react';
-import { Settings as SettingsIcon, Palette, Download, Upload } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings as SettingsIcon, Palette, Download, Upload, Music, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getSongs } from '../services/musicService';
-import { getPlaylists } from '../services/playlistService';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../firebase.config';
 import CustomThemeModal from '../components/CustomThemeModal';
+import RequestArtistModal from '../components/RequestArtistModal';
 
 const Settings = () => {
     const { currentTheme, setCurrentTheme, themes, customTheme, saveCustomTheme } = useTheme();
+    const { currentUser, isAdmin } = useAuth();
     const [exportStatus, setExportStatus] = useState('');
     const [showCustomThemeModal, setShowCustomThemeModal] = useState(false);
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const [artistRequests, setArtistRequests] = useState([]);
 
     const handleExportData = async () => {
         try {
             setExportStatus('Exporting...');
             const songs = await getSongs();
-            const playlists = await getPlaylists();
             
             const exportData = {
                 version: '1.0',
@@ -28,13 +33,6 @@ const Settings = () => {
                     imageUrl: s.imageUrl,
                     url: s.url,
                     playCount: s.playCount || 0,
-                })),
-                playlists: playlists.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    description: p.description,
-                    coverUrl: p.coverUrl,
-                    songs: p.songs || [],
                 })),
             };
 
@@ -68,13 +66,52 @@ const Settings = () => {
                 const data = JSON.parse(text);
                 
                 console.log('Import data:', data);
-                alert(`Import successful!\n\nFound:\n- ${data.songs?.length || 0} songs\n- ${data.playlists?.length || 0} playlists\n\nNote: Import functionality requires Firebase write operations which would need to be implemented.`);
+                alert(`Import successful!\n\nFound:\n- ${data.songs?.length || 0} songs\n\nNote: Import functionality requires Firebase write operations which would need to be implemented.`);
             } catch (error) {
                 console.error('Import failed:', error);
                 alert('Import failed: ' + error.message);
             }
         };
         input.click();
+    };
+
+    // Fetch artist requests if admin
+    useEffect(() => {
+        if (!isAdmin()) return;
+
+        const q = query(collection(db, 'artistRequests'), orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const requests = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate()
+            }));
+            setArtistRequests(requests);
+        });
+
+        return () => unsubscribe();
+    }, [isAdmin]);
+
+    const handleUpdateRequestStatus = async (requestId, status) => {
+        try {
+            await updateDoc(doc(db, 'artistRequests', requestId), {
+                status,
+                updatedAt: new Date()
+            });
+        } catch (error) {
+            console.error('Error updating request:', error);
+            alert('Failed to update request');
+        }
+    };
+
+    const handleDeleteRequest = async (requestId) => {
+        if (!confirm('Delete this request?')) return;
+        try {
+            await deleteDoc(doc(db, 'artistRequests', requestId));
+        } catch (error) {
+            console.error('Error deleting request:', error);
+            alert('Failed to delete request');
+        }
     };
 
     return (
@@ -212,11 +249,9 @@ const Settings = () => {
                         <div className="flex items-start gap-4">
                             <div className="text-5xl">🐆</div>
                             <div>
-                                <h3 className="font-bold text-lg mb-2">School-Wide Music Service</h3>
+                                <h3 className="font-bold text-lg mb-2">music app for school</h3>
                                 <p className="text-[#b3b3b3] mb-3">
-                                    Pumafy is your school's music streaming service, accessible from anywhere. 
-                                    Listen to your favorite artists, discover new music, create playlists, and track your listening habits 
-                                    with a beautiful, feature-rich music player built just for our school.
+                                    the best music app everrrrrrrr
                                 </p>
                                 <p className="text-sm text-[#b3b3b3]">
                                     Version 2.0.0 • Made with ❤️ by silas
@@ -225,6 +260,84 @@ const Settings = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Request Artist Button */}
+                {currentUser && (
+                    <div className="mt-8">
+                        <button
+                            onClick={() => setShowRequestModal(true)}
+                            className="w-full bg-gradient-to-r from-[#ff6b1a] to-[#ff8c42] hover:from-[#ff8c42] hover:to-[#ff6b1a] text-white font-bold py-4 px-6 rounded-lg transition flex items-center justify-center gap-3"
+                        >
+                            <Music size={20} />
+                            Request Artist
+                        </button>
+                    </div>
+                )}
+
+                {/* Artist Requests (Admin Only) */}
+                {isAdmin() && artistRequests.length > 0 && (
+                    <div className="mt-8">
+                        <h2 className="text-2xl font-bold mb-4">Artist Requests ({artistRequests.length})</h2>
+                        <div className="bg-[#1a1a1a] rounded-lg p-6">
+                            <div className="space-y-3">
+                                {artistRequests.map((request) => (
+                                    <div 
+                                        key={request.id}
+                                        className="bg-[#282828] rounded-lg p-4 flex items-center justify-between gap-4"
+                                    >
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white flex-shrink-0">
+                                                {request.requestedByUsername?.[0]?.toUpperCase() || 'U'}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-white truncate">{request.artistName}</p>
+                                                <p className="text-xs text-[#a7a7a7]">
+                                                    by {request.requestedByUsername} • {request.createdAt?.toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            {request.status === 'pending' ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleUpdateRequestStatus(request.id, 'approved')}
+                                                        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+                                                        title="Approve"
+                                                    >
+                                                        <CheckCircle size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateRequestStatus(request.id, 'rejected')}
+                                                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors"
+                                                        title="Reject"
+                                                    >
+                                                        <XCircle size={18} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                                                    request.status === 'approved' 
+                                                        ? 'bg-green-600/20 text-green-400' 
+                                                        : 'bg-red-600/20 text-red-400'
+                                                }`}>
+                                                    {request.status}
+                                                </span>
+                                            )}
+                                            <button
+                                                onClick={() => handleDeleteRequest(request.id)}
+                                                className="text-[#a7a7a7] hover:text-white transition-colors"
+                                                title="Delete"
+                                            >
+                                                <XCircle size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Custom Theme Modal */}
                 {showCustomThemeModal && (
@@ -236,6 +349,12 @@ const Settings = () => {
                         }}
                     />
                 )}
+
+                {/* Request Artist Modal */}
+                <RequestArtistModal 
+                    isOpen={showRequestModal} 
+                    onClose={() => setShowRequestModal(false)} 
+                />
             </div>
         </div>
     );

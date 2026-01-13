@@ -99,6 +99,7 @@ export function ThemeProvider({ children }) {
         
         if (themeToApply) {
             applyThemeColors(themeToApply);
+            applyThemeColors(themeToApply);
         }
     }, [currentTheme, customTheme]);
 

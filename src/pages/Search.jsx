@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon, Filter, X, Play } from 'lucide-react';
-import { searchSongs } from '../services/musicService';
+import { Search as SearchIcon, Filter, X, Play, Music } from 'lucide-react';
+import { searchSongs, getSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Link } from 'react-router-dom';
@@ -10,7 +10,17 @@ const Search = () => {
     const [allResults, setAllResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [category, setCategory] = useState("all"); // all, songs, artists, albums
+    const [recentlyAdded, setRecentlyAdded] = useState([]);
     const { playQueue } = usePlayer();
+
+    // Fetch recently added songs when component mounts
+    useEffect(() => {
+        const fetchRecent = async () => {
+            const songs = await getSongs();
+            setRecentlyAdded(songs.slice(0, 20)); // Get first 20 (newest)
+        };
+        fetchRecent();
+    }, []);
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -149,12 +159,25 @@ const Search = () => {
                                 <p className="text-[#a7a7a7]">Please make sure your words are spelled correctly, or use fewer or different keywords.</p>
                             </div>
                         ) : allResults.length === 0 && !query ? (
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-                                {/* Browse all category placeholders */}
-                                <div className="aspect-square rounded-lg bg-[#E13300] p-4 text-2xl font-bold text-white relative overflow-hidden cursor-pointer hover:shadow-lg transition-transform hover:scale-[1.02]">Pop <img className="absolute -right-4 -bottom-2 w-28 h-28 rotate-[25deg] shadow-md" src="https://i.scdn.co/image/ab67706f0000000255519ea89585698b6c507c5a" alt="" /></div>
-                                <div className="aspect-square rounded-lg bg-[#7358FF] p-4 text-2xl font-bold text-white relative overflow-hidden cursor-pointer hover:shadow-lg transition-transform hover:scale-[1.02]">Rock <img className="absolute -right-4 -bottom-2 w-28 h-28 rotate-[25deg] shadow-md" src="https://i.scdn.co/image/ab67706f00000002fe24d70b631d87c945145b34" alt="" /></div>
-                                <div className="aspect-square rounded-lg bg-[#BC5900] p-4 text-2xl font-bold text-white relative overflow-hidden cursor-pointer hover:shadow-lg transition-transform hover:scale-[1.02]">Hip-Hop <img className="absolute -right-4 -bottom-2 w-28 h-28 rotate-[25deg] shadow-md" src="https://i.scdn.co/image/ab67706f000000025f385ceb528b1db84c2f6890" alt="" /></div>
-                                <div className="aspect-square rounded-lg bg-[#E91429] p-4 text-2xl font-bold text-white relative overflow-hidden cursor-pointer hover:shadow-lg transition-transform hover:scale-[1.02]">Indie <img className="absolute -right-4 -bottom-2 w-28 h-28 rotate-[25deg] shadow-md" src="https://i.scdn.co/image/ab67706f00000002e2133c914bf6ce036e477f10" alt="" /></div>
+                            <div>
+                                <h2 className="text-2xl font-bold mb-6">Recently Added</h2>
+                                <div className="flex flex-col gap-1">
+                                    {recentlyAdded.length === 0 ? (
+                                        <div className="text-center py-12 text-[#a7a7a7]">
+                                            <Music size={64} className="mx-auto mb-4 opacity-50" />
+                                            <p>No songs yet. Start by adding some music!</p>
+                                        </div>
+                                    ) : (
+                                        recentlyAdded.map((song, index) => (
+                                            <SongRow
+                                                key={song.id}
+                                                song={song}
+                                                index={index}
+                                                onPlay={(_s, i) => playQueue(recentlyAdded, i)}
+                                            />
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-8">

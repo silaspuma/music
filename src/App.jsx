@@ -11,9 +11,7 @@ import Search from './pages/Search';
 import Library from './pages/Library';
 import Artist from './pages/Artist';
 import Album from './pages/Album';
-import Playlist from './pages/Playlist';
 import LikedSongs from './pages/LikedSongs';
-import Leaderboard from './pages/Leaderboard';
 import Settings from './pages/Settings';
 import { Menu, X } from 'lucide-react';
 
@@ -59,11 +57,9 @@ function App() {
                 <Route path="/search" element={<Search />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<LikedSongs />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:name" element={<Album />} />
-                <Route path="/playlist/:id" element={<Playlist />} />
               </Routes>
             </div>
           </div>
