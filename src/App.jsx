@@ -14,6 +14,8 @@ import Artist from './pages/Artist';
 import Album from './pages/Album';
 import LikedSongs from './pages/LikedSongs';
 import User from './pages/User';
+import ManageArtists from './pages/ManageArtists';
+import EditArtistProfile from './pages/EditArtistProfile';
 import { Menu, X } from 'lucide-react';
 
 function App() {
@@ -76,6 +78,8 @@ function AppContent() {
               <Route path="/artist/:name" element={<Artist />} />
               <Route path="/album/:name" element={<Album />} />
               <Route path="/user/:username" element={<User />} />
+              <Route path="/manage-artists" element={<ManageArtists />} />
+              <Route path="/edit-artist-profile" element={<EditArtistProfile />} />
             </Routes>
           </div>
         </div>

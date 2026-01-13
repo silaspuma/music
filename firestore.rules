@@ -47,6 +47,14 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
     
+    // Artists collection - for verification system
+    match /artists/{artistId} {
+      allow read: if true; // Anyone can read artist data
+      allow create: if request.auth != null; // Any authenticated user can create artist profiles
+      allow update: if isAdmin(); // Only admins can verify/update artists
+      allow delete: if isAdmin();
+    }
+    
     // Playlists collection (if used in future)
     match /playlists/{playlistId} {
       allow read: if request.auth != null;

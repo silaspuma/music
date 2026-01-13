@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { deleteSong } from '../services/musicService';
 import { isFavorite, toggleFavorite } from '../utils/favorites';
 import { formatPlayCount } from '../utils/playCount';
+import VerifiedBadge from './VerifiedBadge';
 
 const SongRow = ({ song, index, onPlay, onDelete }) => {
     const { currentSong, isPlaying, togglePlay, playNextInQueue } = usePlayer();
@@ -116,10 +117,11 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                     <div className="flex items-center gap-2 text-xs">
                         <Link
                             to={`/artist/${encodeURIComponent(song.artist)}`}
-                            className="text-[#b3b3b3] hover:text-white hover:underline transition-colors truncate"
+                            className="text-[#b3b3b3] hover:text-white hover:underline transition-colors truncate flex items-center gap-1"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {song.artist}
+                            <VerifiedBadge artistName={song.artist} size={14} />
                         </Link>
                         {song.uploaderUsername && (
                             <>

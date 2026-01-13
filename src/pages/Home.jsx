@@ -4,6 +4,7 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Clock, User, Disc3, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getTrendingSongs } from '../utils/playCount';
+import VerifiedBadge from '../components/VerifiedBadge';
 
 const Home = () => {
     const [recentUploads, setRecentUploads] = useState([]);
@@ -13,24 +14,28 @@ const Home = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const songs = await getSongs();
-            
-            // Sort by upload date and take top 50 most recent
-            const sorted = songs
-                .sort((a, b) => {
-                    const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || new Date(0);
-                    const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt || new Date(0);
-                    return dateB - dateA;
-                })
-                .slice(0, 50);
-            
-            setRecentUploads(sorted);
-            
-            // Get trending songs (most played)
-            const trending = getTrendingSongs(songs, 10);
-            setTrendingSongs(trending);
-            
-            setLoading(false);
+            try {
+                const songs = await getSongs();
+                
+                // Sort by upload date and take top 50 most recent
+                const sorted = songs
+                    .sort((a, b) => {
+                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || new Date(0);
+                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt || new Date(0);
+                        return dateB - dateA;
+                    })
+                    .slice(0, 50);
+                
+                setRecentUploads(sorted);
+                
+                // Get trending songs (most played)
+                const trending = getTrendingSongs(songs, 10);
+                setTrendingSongs(trending);
+            } catch (error) {
+                console.error('Error fetching songs:', error);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchData();
     }, []);
@@ -124,10 +129,11 @@ const Home = () => {
                                                 <div className="flex items-center gap-2 text-sm text-[#b3b3b3]">
                                                     <Link 
                                                         to={`/artist/${encodeURIComponent(song.artist)}`}
-                                                        className="hover:underline truncate"
+                                                        className="hover:underline truncate flex items-center gap-1"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         {song.artist}
+                                                        <VerifiedBadge artistName={song.artist} size={14} />
                                                     </Link>
                                                 </div>
                                             </div>
@@ -181,10 +187,11 @@ const Home = () => {
                                     <div className="flex items-center gap-2 text-sm text-[#b3b3b3]">
                                         <Link 
                                             to={`/artist/${encodeURIComponent(song.artist)}`}
-                                            className="hover:underline truncate"
+                                            className="hover:underline truncate flex items-center gap-1"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {song.artist}
+                                            <VerifiedBadge artistName={song.artist} size={14} />
                                         </Link>
                                         <span>•</span>
                                         {song.uploaderUsername && (
