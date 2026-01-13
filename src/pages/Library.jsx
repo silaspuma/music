@@ -12,6 +12,7 @@ const Library = () => {
     const [sortedSongs, setSortedSongs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [sortBy, setSortBy] = useState(() => localStorage.getItem('librarySortBy') || 'dateAdded');
     const [showRequestArtist, setShowRequestArtist] = useState(false);
     const fileInputRef = useRef(null);
@@ -64,11 +65,13 @@ const Library = () => {
         if (!files.length) return;
 
         setUploading(true);
+        setUploadProgress(0);
         let successCount = 0;
         let skipCount = 0;
         const skippedSongs = [];
 
-        for (const file of files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             try {
                 await uploadSong(file);
                 successCount++;
@@ -83,9 +86,13 @@ const Library = () => {
                     alert(`Failed to upload ${file.name}: ${error.message}`);
                 }
             }
+            // Update progress
+            const progress = ((i + 1) / files.length) * 100;
+            setUploadProgress(progress);
         }
 
         setUploading(false);
+        setUploadProgress(0);
         fetchSongs();
 
         let message = '';
@@ -175,6 +182,18 @@ const Library = () => {
                                     {uploading ? 'Uploading...' : 'Upload Songs'}
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
+                                
+                                {uploading && (
+                                    <div className="flex items-center gap-2 flex-1 max-w-xs ml-4">
+                                        <div className="flex-1 h-2 bg-[#282828] rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-[#ff6b1a] to-[#ff8c42] transition-all duration-200"
+                                                style={{ width: `${uploadProgress}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs text-white font-medium whitespace-nowrap">{Math.round(uploadProgress)}%</span>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <button
