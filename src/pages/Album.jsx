@@ -58,12 +58,11 @@ const Album = () => {
             <div className="relative z-10 px-4 sm:px-6 md:px-8 py-4 md:py-6 bg-[#121212]/40 backdrop-blur-3xl">
                 <div className="flex items-center gap-4 sm:gap-6 mb-6 md:mb-8">
                     <button
-                        className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477] touch-active"
+                        className="bg-[#ff6b1a] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#ff8c42] touch-active"
                         onClick={() => songs.length && playQueue(songs, 0)}
                     >
                         <Play fill="currentColor" size={28} />
                     </button>
-                    <button className="text-white text-xs sm:text-sm font-bold border border-[#727272] hover:border-white rounded-[4px] px-4 py-2 uppercase tracking-widest transition-colors">Follow</button>
                 </div>
 
                 {/* Table Header - Hidden on mobile */}

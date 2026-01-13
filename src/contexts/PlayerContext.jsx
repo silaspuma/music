@@ -243,6 +243,31 @@ export function PlayerProvider({ children }) {
         setQueue([...queue, song]);
     };
 
+    const playNextInQueue = (song) => {
+        // Insert song right after current song
+        if (currentSong) {
+            const newQueue = [...queue];
+            newQueue.splice(currentIndex + 1, 0, song);
+            setQueue(newQueue);
+            
+            // Update original queue too if shuffle is on
+            if (isShuffle && originalQueue.length > 0) {
+                const newOriginalQueue = [...originalQueue];
+                const originalCurrentIndex = originalQueue.findIndex(s => s.id === currentSong.id);
+                if (originalCurrentIndex >= 0) {
+                    newOriginalQueue.splice(originalCurrentIndex + 1, 0, song);
+                    setOriginalQueue(newOriginalQueue);
+                }
+            }
+        } else {
+            // No current song, just add to queue and start playing
+            setQueue([song]);
+            setCurrentSong(song);
+            setCurrentIndex(0);
+            setIsPlaying(true);
+        }
+    };
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyPress = (e) => {
@@ -356,6 +381,7 @@ export function PlayerProvider({ children }) {
         removeFromQueue,
         clearQueue,
         addToQueue,
+        playNextInQueue,
         sleepTimer,
         sleepTimerMinutes,
         setSleepTimerDuration

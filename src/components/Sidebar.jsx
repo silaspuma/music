@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Library, Plus, Heart, Music, Clock, BarChart3, Settings } from 'lucide-react';
+import { Home, Search, Library, Plus, Heart, Music, Clock, BarChart3, Settings, User, LogIn, Trophy } from 'lucide-react';
 import { createPlaylist, getPlaylists } from '../services/playlistService';
+import { useAuth } from '../contexts/AuthContext';
+import AuthModal from './AuthModal';
 
 const Sidebar = ({ onNavigate }) => {
     const [playlists, setPlaylists] = useState([]);
     const [playlistError, setPlaylistError] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const location = useLocation();
+    const { currentUser, userProfile, logout } = useAuth();
 
     useEffect(() => {
         fetchPlaylists();
@@ -47,7 +51,7 @@ const Sidebar = ({ onNavigate }) => {
             <div className="flex flex-col px-3 gap-1">
                 <NavItem to="/" icon={<Home size={26} />} label="Home" active={location.pathname === '/'} onNavigate={onNavigate} />
                 <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} onNavigate={onNavigate} />
-                <NavItem to="/library" icon={<Library size={26} />} label="Your Library" active={location.pathname === '/library'} onNavigate={onNavigate} />
+                <NavItem to="/library" icon={<Library size={26} />} label="All Songs" active={location.pathname === '/library'} onNavigate={onNavigate} />
             </div>
 
             <div className="mt-4 pt-1 px-3 flex flex-col">
@@ -63,23 +67,16 @@ const Sidebar = ({ onNavigate }) => {
                     </button>
                     <NavItem 
                         to="/liked" 
-                        icon={<div className="bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
+                        icon={<div className="bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
                         label="Liked Songs" 
                         active={location.pathname === '/liked'} 
                         onNavigate={onNavigate} 
                     />
                     <NavItem 
-                        to="/recently-played" 
-                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Clock size={14} /></div>} 
-                        label="Recently Played" 
-                        active={location.pathname === '/recently-played'} 
-                        onNavigate={onNavigate} 
-                    />
-                    <NavItem 
-                        to="/stats" 
-                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><BarChart3 size={14} /></div>} 
-                        label="Your Stats" 
-                        active={location.pathname === '/stats'} 
+                        to="/leaderboard" 
+                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Trophy size={14} /></div>} 
+                        label="Leaderboard" 
+                        active={location.pathname === '/leaderboard'} 
                         onNavigate={onNavigate} 
                     />
                     <NavItem 
@@ -90,6 +87,43 @@ const Sidebar = ({ onNavigate }) => {
                         onNavigate={onNavigate} 
                     />
                 </div>
+            </div>
+
+            <div className="mx-6 border-t border-[#282828] mb-1"></div>
+
+            {/* User Profile / Login Section */}
+            <div className="px-6 pb-3">
+                {currentUser ? (
+                    <div className="flex items-center gap-3 p-3 bg-[#181818] rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white flex-shrink-0">
+                            {userProfile?.username?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{userProfile?.username || 'User'}</p>
+                            <p className="text-xs text-[#a7a7a7]">{userProfile?.listeningMinutes || 0} min listened</p>
+                        </div>
+                        <button
+                            onClick={logout}
+                            className="text-[#a7a7a7] hover:text-white transition-colors"
+                            title="Log out"
+                        >
+                            <LogIn size={18} className="rotate-180" />
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => setShowAuthModal(true)}
+                        className="w-full flex items-center gap-3 p-3 bg-[#181818] hover:bg-[#282828] rounded-lg transition-colors"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] flex items-center justify-center flex-shrink-0">
+                            <LogIn size={20} className="text-white" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p className="text-sm font-bold text-white">Log in</p>
+                            <p className="text-xs text-[#a7a7a7]">Track your stats</p>
+                        </div>
+                    </button>
+                )}
             </div>
 
             <div className="mx-6 border-t border-[#282828] mb-1"></div>
@@ -115,6 +149,8 @@ const Sidebar = ({ onNavigate }) => {
                     )}
                 </div>
             </div>
+
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     );
 };

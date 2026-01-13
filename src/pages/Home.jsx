@@ -3,57 +3,116 @@ import { getSongs } from '../services/musicService';
 import { getPlaylists } from '../services/playlistService';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Music, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const Card = ({ song, index, onPlay }) => (
-    <div
+const AlbumCard = ({ album, onClick }) => (
+    <Link
+        to={`/album/${encodeURIComponent(album.name)}`}
         className="bg-[#181818] p-4 rounded-[6px] hover:bg-[#282828] transition-all duration-300 group cursor-pointer relative"
-        onClick={() => onPlay(song, index)}
     >
         <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-[6px] overflow-hidden">
-            {song.imageUrl ? (
-                <img src={song.imageUrl} alt={song.title} className="w-full aspect-square object-cover" />
-            ) : (
-                <div className="w-full aspect-square bg-[#333] flex items-center justify-center text-4xl text-gray-500 font-bold">♫</div>
-            )}
-            <button className="absolute bottom-2 right-2 bg-[#1ed760] rounded-full p-2 text-black shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-[#3be477]">
+            <img src={album.coverUrl} alt={album.name} className="w-full aspect-square object-cover" />
+            <button 
+                onClick={(e) => {
+                    e.preventDefault();
+                    onClick();
+                }}
+                className="absolute bottom-2 right-2 bg-[#ff6b1a] rounded-full p-2 text-white shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-[#ff8c42]"
+            >
                 <Play fill="currentColor" size={16} className="ml-0.5" />
             </button>
         </div>
-        <h3 className="font-bold text-white mb-2 truncate text-[16px]">{song.title}</h3>
-        <p className="text-sm text-[#a7a7a7] truncate line-clamp-2">{song.artist}</p>
-    </div>
+        <h3 className="font-bold text-white mb-2 truncate text-[16px]">{album.name}</h3>
+        <p className="text-sm text-[#a7a7a7] truncate">{album.artist}</p>
+    </Link>
+);
+
+const ArtistCard = ({ artist }) => (
+    <Link
+        to={`/artist/${encodeURIComponent(artist.name)}`}
+        className="bg-[#181818] p-4 rounded-[6px] hover:bg-[#282828] transition-all duration-300 cursor-pointer text-center group"
+    >
+        <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-full overflow-hidden">
+            <img src={artist.coverUrl} alt={artist.name} className="w-full aspect-square object-cover" />
+        </div>
+        <h3 className="font-bold text-white truncate text-[14px] mb-1">{artist.name}</h3>
+        <p className="text-xs text-[#a7a7a7]">Artist</p>
+    </Link>
 );
 
 const Home = () => {
-    const [recentSongs, setRecentSongs] = useState([]);
+    const [recentAlbums, setRecentAlbums] = useState([]);
     const [playlists, setPlaylists] = useState([]);
     const [trendingArtists, setTrendingArtists] = useState([]);
+    const [allSongs, setAllSongs] = useState([]);
     const [loading, setLoading] = useState(true);
     const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchData = async () => {
             const songs = await getSongs();
-            setRecentSongs(songs.slice(0, 8));
+            setAllSongs(songs);
             
             const playlistData = await getPlaylists();
             setPlaylists(playlistData.slice(0, 5));
             
-            // Get trending artists (count plays by artist)
-            const artistCounts = {};
+            // Get unique albums with their newest upload date
+            const albumMap = new Map();
             songs.forEach(song => {
-                artistCounts[song.artist] = (artistCounts[song.artist] || 0) + (song.playCount || 0);
+                const key = `${song.album}-${song.artist}`;
+                if (!albumMap.has(key)) {
+                    albumMap.set(key, {
+                        name: song.album,
+                        artist: song.artist,
+                        coverUrl: song.coverUrl,
+                        uploadedAt: song.uploadedAt || new Date(),
+                        songs: [song]
+                    });
+                } else {
+                    albumMap.get(key).songs.push(song);
+                }
             });
-            const topArtists = Object.entries(artistCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(([artist, _]) => ({ artist, count: artistCounts[artist] }));
-            setTrendingArtists(topArtists);
             
+            // Sort by upload date and take top 5
+            const sortedAlbums = Array.from(albumMap.values())
+                .sort((a, b) => {
+                    const dateA = a.uploadedAt?.toDate ? a.uploadedAt.toDate() : a.uploadedAt;
+                    const dateB = b.uploadedAt?.toDate ? b.uploadedAt.toDate() : b.uploadedAt;
+                    return dateB - dateA;
+                })
+                .slice(0, 5);
+            
+            setRecentAlbums(sortedAlbums);
+            
+            // Get top 5 artists by play count
+            const artistMap = new Map();
+            songs.forEach(song => {
+                if (!artistMap.has(song.artist)) {
+                    artistMap.set(song.artist, {
+                        name: song.artist,
+                        coverUrl: song.coverUrl,
+                        playCount: song.playCount || 0
+                    });
+                } else {
+                    artistMap.get(song.artist).playCount += (song.playCount || 0);
+                }
+            });
+            
+            const topArtists = Array.from(artistMap.values())
+                .sort((a, b) => b.playCount - a.playCount)
+                .slice(0, 5);
+            
+            setTrendingArtists(topArtists);
             setLoading(false);
         };
         fetchData();
     }, []);
+
+    const handlePlayAlbum = (album) => {
+        if (album.songs && album.songs.length > 0) {
+            playQueue(album.songs, 0);
+        }
+    };
 
     const greeting = () => {
         const hour = new Date().getHours();
@@ -69,50 +128,48 @@ const Home = () => {
 
             <div className="relative z-10 p-4 sm:p-6 md:p-8">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-2 tracking-tight">{greeting()}</h1>
-                <p className="text-sm text-[#b3b3b3] mb-6">Welcome to Pumafy - Your community music library, accessible anywhere 🐆</p>
+                <p className="text-sm text-[#b3b3b3] mb-6">Welcome to Pumafy - Your school-wide music service 🐆</p>
 
-                {/* Recently Added Section */}
+                {/* Trending Artists Section */}
+                {trendingArtists.length > 0 && (
+                    <section className="mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-2xl font-bold hover:underline cursor-pointer tracking-tight flex items-center gap-2">
+                                <Users size={28} />Trending Artists
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                            {trendingArtists.map((artist) => (
+                                <ArtistCard key={artist.name} artist={artist} />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Recently Added Albums Section */}
                 <section className="mb-8">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold hover:underline cursor-pointer tracking-tight">Recently Added</h2>
-                        <span className="text-xs font-bold text-[#b3b3b3] hover:underline cursor-pointer tracking-widest hover:text-white">SHOW ALL</span>
+                        <h2 className="text-2xl font-bold hover:underline cursor-pointer tracking-tight">Recently Added Albums</h2>
                     </div>
 
                     {loading ? (
                         <div className="text-gray-500">Loading...</div>
                     ) : (
                         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-                            {recentSongs.length > 0 ? recentSongs.map((song, index) => (
-                                <Card key={song.id} song={song} index={index} onPlay={(_s, i) => playQueue(recentSongs, i)} />
+                            {recentAlbums.length > 0 ? recentAlbums.map((album) => (
+                                <AlbumCard 
+                                    key={`${album.name}-${album.artist}`} 
+                                    album={album}
+                                    onClick={() => handlePlayAlbum(album)}
+                                />
                             )) : (
                                 <div className="col-span-full py-12 text-gray-500 text-center bg-[#181818]/50 rounded-lg border border-dashed border-gray-700">
-                                    No music uploaded yet. Go to Library to add some songs!
+                                    No music uploaded yet. Go to All Songs to add some!
                                 </div>
                             )}
                         </div>
                     )}
                 </section>
-
-                {/* Trending Artists Section */}
-                {trendingArtists.length > 0 && (
-                    <section className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-bold hover:underline cursor-pointer tracking-tight flex items-center gap-2"><Users size={28} />Trending Artists</h2>
-                            <span className="text-xs font-bold text-[#b3b3b3] hover:underline cursor-pointer tracking-widest hover:text-white">SHOW ALL</span>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                            {trendingArtists.map((artist) => (
-                                <div key={artist.artist} className="bg-[#181818] p-4 rounded-[6px] hover:bg-[#282828] transition-all duration-300 cursor-pointer text-center">
-                                    <div className="w-full aspect-square bg-gradient-to-br from-purple-600 to-pink-600 rounded-[6px] flex items-center justify-center mb-4">
-                                        <Users size={32} className="text-white" />
-                                    </div>
-                                    <h3 className="font-bold text-white truncate text-[14px]">{artist.artist}</h3>
-                                    <p className="text-xs text-[#a7a7a7] mt-1">{artist.count} plays</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
 
                 {/* Your Playlists Section */}
                 {playlists.length > 0 && (

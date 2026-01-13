@@ -1,15 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, Mic2, ListMusic, MonitorSpeaker, Maximize2, Heart, Timer } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart } from 'lucide-react';
 import QueueView from './QueueView';
 
 const Player = () => {
-    const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat, sleepTimerMinutes, setSleepTimerDuration } = usePlayer();
+    const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat } = usePlayer();
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isHoveringSeek, setIsHoveringSeek] = useState(false);
     const [showQueue, setShowQueue] = useState(false);
-    const [showSleepTimer, setShowSleepTimer] = useState(false);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -126,48 +125,12 @@ const Player = () => {
 
             {/* Right: Volume & Extras (hidden on mobile) */}
             <div className="hidden sm:flex items-center justify-end w-[30%] min-w-[180px] gap-x-3">
-                <button className="text-[#b3b3b3] hover:text-white"><Mic2 size={16} /></button>
                 <button 
                     onClick={() => setShowQueue(true)}
                     className="text-[#b3b3b3] hover:text-white"
                 >
                     <ListMusic size={16} />
                 </button>
-                <div className="relative">
-                    <button 
-                        onClick={() => setShowSleepTimer(!showSleepTimer)}
-                        className={`hover:text-white transition ${sleepTimerMinutes > 0 ? 'text-[#1ed760]' : 'text-[#b3b3b3]'}`}
-                    >
-                        <Timer size={16} />
-                    </button>
-                    {showSleepTimer && (
-                        <div className="absolute bottom-12 right-0 bg-[#282828] rounded-lg p-3 shadow-xl min-w-[180px]">
-                            <p className="text-xs text-[#b3b3b3] mb-2">Sleep Timer</p>
-                            {sleepTimerMinutes > 0 ? (
-                                <div className="flex flex-col gap-2">
-                                    <p className="text-sm font-bold text-[#1ed760]">{sleepTimerMinutes} min remaining</p>
-                                    <button 
-                                        onClick={() => {
-                                            setSleepTimerDuration(0);
-                                            setShowSleepTimer(false);
-                                        }}
-                                        className="text-xs bg-[#1a1a1a] hover:bg-[#2a2a2a] py-1 px-2 rounded"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-2">
-                                    <button onClick={() => { setSleepTimerDuration(15); setShowSleepTimer(false); }} className="text-sm hover:bg-[#3a3a3a] py-2 px-3 rounded text-left">15 minutes</button>
-                                    <button onClick={() => { setSleepTimerDuration(30); setShowSleepTimer(false); }} className="text-sm hover:bg-[#3a3a3a] py-2 px-3 rounded text-left">30 minutes</button>
-                                    <button onClick={() => { setSleepTimerDuration(45); setShowSleepTimer(false); }} className="text-sm hover:bg-[#3a3a3a] py-2 px-3 rounded text-left">45 minutes</button>
-                                    <button onClick={() => { setSleepTimerDuration(60); setShowSleepTimer(false); }} className="text-sm hover:bg-[#3a3a3a] py-2 px-3 rounded text-left">1 hour</button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-                <button className="text-[#b3b3b3] hover:text-white"><MonitorSpeaker size={16} /></button>
                 <div className="flex items-center gap-x-2 w-32 group">
                     <Volume2 size={20} className="text-[#b3b3b3] group-hover:text-white" />
                     <div className="relative w-full h-[4px] rounded-full flex items-center">
@@ -182,12 +145,11 @@ const Player = () => {
                         />
                         <div className="absolute w-full h-full bg-[#4d4d4d] rounded-full z-0"></div>
                         <div
-                            className="absolute h-full bg-white group-hover:bg-[#1ed760] rounded-full z-10 pointer-events-none"
+                            className="absolute h-full bg-white group-hover:bg-[#ff6b1a] rounded-full z-10 pointer-events-none"
                             style={{ width: `${volumePercent}%` }}
                         ></div>
                     </div>
                 </div>
-                <button className="text-[#b3b3b3] hover:text-white"><Maximize2 size={16} /></button>
             </div>
 
             <QueueView isOpen={showQueue} onClose={() => setShowQueue(false)} />

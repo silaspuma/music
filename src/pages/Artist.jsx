@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getSongs, getArtistStats } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play } from 'lucide-react';
+import { Play, Shuffle } from 'lucide-react';
 
 const Artist = () => {
     const { name } = useParams();
@@ -35,6 +35,13 @@ const Artist = () => {
         }
     };
 
+    const handleShuffle = () => {
+        if (songs.length > 0) {
+            const shuffled = [...songs].sort(() => Math.random() - 0.5);
+            playQueue(shuffled, 0);
+        }
+    };
+
     if (loading) return <div className="p-8 text-[#b3b3b3]">Loading...</div>;
 
     const artistImage = songs.length > 0 ? songs[0].imageUrl : null;
@@ -60,11 +67,13 @@ const Artist = () => {
             </div>
 
             <div className="relative z-10 p-4 sm:p-6 md:p-8 pt-4 md:pt-6 bg-gradient-to-b from-[#121212]/20 to-[#121212]">
-                <div className="mb-8">
-                    <button onClick={handlePlayAll} className="bg-[#1ed760] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#3be477]">
+                <div className="mb-8 flex items-center gap-4">
+                    <button onClick={handlePlayAll} className="bg-[#ff6b1a] text-black rounded-full p-[14px] hover:scale-105 active:scale-100 transition-transform shadow-lg hover:bg-[#ff8c42]">
                         <Play fill="currentColor" size={28} />
                     </button>
-                    <button className="ml-8 text-white text-sm font-bold border border-[#727272] hover:border-white rounded-[4px] px-4 py-1.5 uppercase tracking-widest transition-colors">Follow</button>
+                    <button onClick={handleShuffle} className="text-[#b3b3b3] hover:text-white hover:scale-105 transition-all">
+                        <Shuffle size={32} />
+                    </button>
                 </div>
 
                 <h2 className="text-2xl font-bold mb-4 text-white">Popular</h2>

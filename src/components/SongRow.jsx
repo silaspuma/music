@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Heart, MoreHorizontal, Copy } from 'lucide-react';
+import { Play, Pause, Heart, MoreHorizontal, Copy, ListPlus } from 'lucide-react';
 import { usePlayer } from '../contexts/PlayerContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { deleteSong, toggleLikeSong, isLiked } from '../services/musicService';
+import { deleteSong } from '../services/musicService';
 import { getPlaylists, addSongToPlaylist } from '../services/playlistService';
+import { isFavorite, toggleFavorite } from '../utils/favorites';
 
 const SongRow = ({ song, index, onPlay, onDelete }) => {
-    const { currentSong, isPlaying, togglePlay } = usePlayer();
+    const { currentSong, isPlaying, togglePlay, playNextInQueue } = usePlayer();
+    const { isAdmin } = useAuth();
     const isCurrent = currentSong?.id === song.id;
     const isPlayingCurrent = isCurrent && isPlaying;
     const [hover, setHover] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
     const [playlists, setPlaylists] = useState([]);
     const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
 
@@ -21,9 +24,8 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                 const lists = await getPlaylists();
                 setPlaylists(lists);
                 
-                // Check if song is liked
-                const liked = await isLiked(song.id);
-                setIsFavorite(liked);
+                // Check if song is liked from localStorage
+                setIsLiked(isFavorite(song.id));
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -39,13 +41,9 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
         }
     };
 
-    const handleFavorite = async () => {
-        try {
-            const newState = await toggleLikeSong(song.id);
-            setIsFavorite(newState);
-        } catch (error) {
-            console.error("Error toggling favorite:", error);
-        }
+    const handleFavorite = () => {
+        const newState = toggleFavorite(song.id);
+        setIsLiked(newState);
     };
 
     const handleAddToPlaylist = async (playlistId) => {
@@ -134,7 +132,7 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                     </div>
                 )}
                 <div className="flex flex-col truncate pr-1 sm:pr-2 min-w-0">
-                    <span className={`text-xs sm:text-[16px] font-normal truncate mb-[1px] sm:mb-[2px] ${isCurrent ? 'text-[#1ed760]' : 'text-white'}`}>{song.title}</span>
+                    <span className={`text-xs sm:text-[16px] font-normal truncate mb-[1px] sm:mb-[2px] ${isCurrent ? 'text-[#ff6b1a]' : 'text-white'}`}>{song.title}</span>
                     <Link
                         to={`/artist/${encodeURIComponent(song.artist)}`}
                         className="text-xs text-[#b3b3b3] hover:text-white hover:underline transition-colors truncate"
@@ -159,9 +157,9 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
             <div className="flex items-center justify-end gap-x-1 sm:gap-x-4 flex-shrink-0">
                 <button
                     onClick={handleFavorite}
-                    className={`transition-colors hidden sm:block ${isFavorite ? 'text-[#1ed760]' : 'text-[#b3b3b3] hover:text-white'} ${hover ? 'visible' : 'invisible'}`}
+                    className={`transition-colors hidden sm:block ${isLiked ? 'text-[#ff6b1a]' : 'text-[#b3b3b3] hover:text-white'} ${hover ? 'visible' : 'invisible'}`}
                 >
-                    <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+                    <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
                 </button>
                 <span className="text-xs sm:text-sm text-[#b3b3b3] font-normal tabular-nums min-w-[35px] sm:min-w-[40px] text-right">{formatDuration(song.duration)}</span>
                 
@@ -180,11 +178,23 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                     {showMenu && (
                         <div className="absolute right-0 mt-2 w-48 bg-[#282828] rounded-lg shadow-lg z-50 py-2 border border-[#3e3e3e]">
                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    playNextInQueue(song);
+                                    setShowMenu(false);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3e3e3e] transition-colors flex items-center gap-2"
+                            >
+                                <ListPlus size={14} />
+                                Play Next
+                            </button>
+                            
+                            <button
                                 onClick={handleFavorite}
                                 className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3e3e3e] transition-colors flex items-center gap-2"
                             >
-                                <Heart size={14} fill={isFavorite ? 'currentColor' : 'none'} />
-                                {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                                <Heart size={14} fill={isLiked ? 'currentColor' : 'none'} />
+                                {isLiked ? 'Remove from Favorites' : 'Add to Favorites'}
                             </button>
                             
                             {/* Add to Playlist Submenu */}
@@ -237,13 +247,17 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                                 <Copy size={14} />
                                 Share
                             </button>
-                            <hr className="border-[#3e3e3e] my-2" />
-                            <button
-                                onClick={handleDelete}
-                                className="w-full text-left px-4 py-2 text-sm text-[#ff4444] hover:bg-[#3e3e3e] transition-colors"
-                            >
-                                Delete Song
-                            </button>
+                            {isAdmin() && (
+                                <>
+                                    <hr className="border-[#3e3e3e] my-2" />
+                                    <button
+                                        onClick={handleDelete}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#ff4444] hover:bg-[#3e3e3e] transition-colors"
+                                    >
+                                        Delete Song
+                                    </button>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

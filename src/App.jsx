@@ -5,6 +5,7 @@ import Player from './components/Player';
 import InstallPWA from './components/InstallPWA';
 import { PlayerProvider } from './contexts/PlayerContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Library from './pages/Library';
@@ -12,8 +13,7 @@ import Artist from './pages/Artist';
 import Album from './pages/Album';
 import Playlist from './pages/Playlist';
 import LikedSongs from './pages/LikedSongs';
-import RecentlyPlayed from './pages/RecentlyPlayed';
-import Stats from './pages/Stats';
+import Leaderboard from './pages/Leaderboard';
 import Settings from './pages/Settings';
 import { Menu, X } from 'lucide-react';
 
@@ -23,7 +23,8 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
-        <PlayerProvider>
+        <AuthProvider>
+          <PlayerProvider>
           <div className="flex flex-col h-screen bg-black text-white">
             <div className="flex flex-1 overflow-hidden relative">
             {/* Mobile Menu Button */}
@@ -58,8 +59,7 @@ function App() {
                 <Route path="/search" element={<Search />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<LikedSongs />} />
-                <Route path="/recently-played" element={<RecentlyPlayed />} />
-                <Route path="/stats" element={<Stats />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:name" element={<Album />} />
@@ -75,6 +75,7 @@ function App() {
           <InstallPWA />
         </div>
       </PlayerProvider>
+      </AuthProvider>
       </ThemeProvider>
     </Router>
   );

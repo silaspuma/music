@@ -3,6 +3,7 @@ import { Upload, Clock3, Search, ArrowUpDown, Shuffle } from 'lucide-react';
 import { getSongs, uploadSong } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
+import { useAuth } from '../contexts/AuthContext';
 import { formatTotalDuration } from '../utils/formatDuration';
 
 const Library = () => {
@@ -13,6 +14,7 @@ const Library = () => {
     const [sortBy, setSortBy] = useState(() => localStorage.getItem('librarySortBy') || 'dateAdded');
     const fileInputRef = useRef(null);
     const { playQueue } = usePlayer();
+    const { isAdmin } = useAuth();
 
     const fetchSongs = async () => {
         setLoading(true);
@@ -128,7 +130,7 @@ const Library = () => {
 
                 <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">
                     <span className="uppercase text-xs font-bold tracking-wider text-white">Playlist</span>
-                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">Your Library</h1>
+                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">All Songs</h1>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-white">
                         <span className="cursor-pointer">User</span>
                         <span className="font-normal text-[#b3b3b3]">• {songs.length} songs, {formattedDuration}</span>
@@ -156,19 +158,23 @@ const Library = () => {
                         >
                             <Shuffle size={32} />
                         </button>
-                        <button
-                            onClick={handleUploadClick}
-                            disabled={uploading}
-                            className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active"
-                        >
-                            {uploading ? (
-                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                            ) : (
-                                <Upload size={16} />
-                            )}
-                            {uploading ? 'Uploading...' : 'Upload Songs'}
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
+                        {isAdmin() && (
+                            <>
+                                <button
+                                    onClick={handleUploadClick}
+                                    disabled={uploading}
+                                    className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active"
+                                >
+                                    {uploading ? (
+                                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    ) : (
+                                        <Upload size={16} />
+                                    )}
+                                    {uploading ? 'Uploading...' : 'Upload Songs'}
+                                </button>
+                                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
+                            </>
+                        )}
                     </div>
                     <div className="flex items-center gap-4">
                         <select
