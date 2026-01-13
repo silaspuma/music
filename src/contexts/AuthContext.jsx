@@ -34,9 +34,6 @@ export function AuthProvider({ children }) {
                         email: user.email,
                         username: user.displayName || user.email.split('@')[0],
                         listeningMinutes: 0,
-                        uploadedToday: 0,
-                        lastUploadDate: null,
-                        uploadedSongs: [],
                         createdAt: new Date(),
                         isAdmin: user.email === ADMIN_EMAIL
                     };
@@ -66,9 +63,6 @@ export function AuthProvider({ children }) {
             email: user.email,
             username: username,
             listeningMinutes: 0,
-            uploadedToday: 0,
-            lastUploadDate: null,
-            uploadedSongs: [],
             createdAt: new Date(),
             isAdmin: user.email === ADMIN_EMAIL
         };

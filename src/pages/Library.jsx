@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Upload, Clock3, Search, ArrowUpDown, Shuffle } from 'lucide-react';
-import { uploadSong } from '../services/musicService';
-import { collection, query, where, getDocs, orderBy as fbOrderBy } from 'firebase/firestore';
-import { db } from '../firebase.config';
+import { getSongs, uploadSong } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useAuth } from '../contexts/AuthContext';
 import RequestArtistModal from '../components/RequestArtistModal';
 import { formatTotalDuration } from '../utils/formatDuration';
-import { checkUploadQuota, incrementUploadCount, getUploadStats } from '../utils/uploadQuota';
 
 const Library = () => {
     const [songs, setSongs] = useState([]);
@@ -16,7 +13,6 @@ const Library = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploadStats, setUploadStats] = useState({ uploadedToday: 0, remaining: 30, totalUploads: 0 });
     const [sortBy, setSortBy] = useState(() => localStorage.getItem('librarySortBy') || 'dateAdded');
     const [showRequestArtist, setShowRequestArtist] = useState(false);
     const fileInputRef = useRef(null);
@@ -24,45 +20,15 @@ const Library = () => {
     const { isAdmin, currentUser } = useAuth();
 
     const fetchSongs = async () => {
-        if (!currentUser) {
-            setSongs([]);
-            setLoading(false);
-            return;
-        }
-        
         setLoading(true);
-        try {
-            const songsRef = collection(db, 'songs');
-            const q = query(
-                songsRef,
-                where('uploadedBy', '==', currentUser.uid),
-                fbOrderBy('createdAt', 'desc')
-            );
-            const querySnapshot = await getDocs(q);
-            const data = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setSongs(data);
-        } catch (error) {
-            console.error('Error fetching songs:', error);
-            setSongs([]);
-        }
+        const data = await getSongs();
+        setSongs(data);
         setLoading(false);
     };
 
     useEffect(() => {
         fetchSongs();
-        if (currentUser) {
-            loadUploadStats();
-        }
-    }, [currentUser]);
-
-    const loadUploadStats = async () => {
-        if (!currentUser) return;
-        const stats = await getUploadStats(currentUser.uid);
-        setUploadStats(stats);
-    };
+    }, []);
 
     useEffect(() => {
         // Apply sorting whenever songs or sortBy changes
@@ -98,40 +64,16 @@ const Library = () => {
         const files = Array.from(e.target.files || []);
         if (!files.length) return;
 
-        if (!currentUser) {
-            alert('You must be logged in to upload songs.');
-            return;
-        }
-
-        // Check upload quota
-        const quotaCheck = await checkUploadQuota(currentUser.uid);
-        if (!quotaCheck.canUpload) {
-            alert('You have reached your daily upload limit of 30 songs. Please try again tomorrow.');
-            return;
-        }
-
-        if (files.length > quotaCheck.remaining) {
-            alert(`You can only upload ${quotaCheck.remaining} more song(s) today. You've already uploaded ${quotaCheck.uploadedToday} songs.`);
-            return;
-        }
-
         setUploading(true);
         setUploadProgress(0);
         let successCount = 0;
         let skipCount = 0;
         const skippedSongs = [];
 
-        const uploaderInfo = {
-            uid: currentUser.uid,
-            username: userProfile?.username || currentUser.email?.split('@')[0] || 'Anonymous',
-            email: currentUser.email
-        };
-
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             try {
-                const songId = await uploadSong(file, uploaderInfo);
-                await incrementUploadCount(currentUser.uid, songId);
+                await uploadSong(file);
                 successCount++;
             } catch (error) {
                 if (error.message.includes('already exists')) {
@@ -152,7 +94,6 @@ const Library = () => {
         setUploading(false);
         setUploadProgress(0);
         fetchSongs();
-        loadUploadStats();
 
         let message = '';
         if (successCount > 0) {
@@ -193,14 +134,14 @@ const Library = () => {
             {/* Header / Gradient */}
             <div className="relative h-[180px] sm:h-[240px] md:h-[280px] w-full bg-gradient-to-b from-[#4000F4] to-[#121212] flex flex-col sm:flex-row items-end p-4 sm:p-6 md:p-8 gap-4 sm:gap-6">
                 <div className="relative z-10 h-[120px] sm:h-[160px] md:h-[192px] w-[120px] sm:w-[160px] md:w-[192px] shadow-[0_4px_60px_rgba(0,0,0,0.5)] flex items-center justify-center bg-gradient-to-br from-[#450af5] to-[#c4efd9] shrink-0 rounded-lg">
-                    <Upload size={80} className="text-white opacity-50" />
+                    <span className="text-4xl sm:text-5xl md:text-6xl text-white opacity-50">♫</span>
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-1 w-full overflow-hidden">
-                    <span className="uppercase text-xs font-bold tracking-wider text-white">Library</span>
-                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">Your Uploads</h1>
+                    <span className="uppercase text-xs font-bold tracking-wider text-white">Playlist</span>
+                    <h1 className="text-4xl sm:text-6xl md:text-[90px] font-black tracking-tighter text-white leading-tight mb-2 sm:mb-4 truncate">All Songs</h1>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-white">
-                        <span className="cursor-pointer">{userProfile?.username || 'User'}</span>
+                        <span className="cursor-pointer">User</span>
                         <span className="font-normal text-[#b3b3b3]">• {songs.length} songs, {formattedDuration}</span>
                     </div>
                 </div>
@@ -226,19 +167,19 @@ const Library = () => {
                         >
                             <Shuffle size={32} />
                         </button>
-                        {currentUser ? (
+                        {isAdmin() ? (
                             <>
                                 <button
                                     onClick={handleUploadClick}
-                                    disabled={uploading || uploadStats.remaining === 0}
-                                    className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={uploading}
+                                    className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active"
                                 >
                                     {uploading ? (
                                         <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                                     ) : (
                                         <Upload size={16} />
                                     )}
-                                    {uploading ? 'Uploading...' : `Upload (${uploadStats.remaining}/30)`}
+                                    {uploading ? 'Uploading...' : 'Upload Songs'}
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
                                 
