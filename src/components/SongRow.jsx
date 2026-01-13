@@ -5,20 +5,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { deleteSong } from '../services/musicService';
 import { isFavorite, toggleFavorite } from '../utils/favorites';
-import { formatPlayCount } from '../utils/playCount';
-import VerifiedBadge from './VerifiedBadge';
 
 const SongRow = ({ song, index, onPlay, onDelete }) => {
     const { currentSong, isPlaying, togglePlay, playNextInQueue } = usePlayer();
-    const { isAdmin, currentUser } = useAuth();
+    const { isAdmin } = useAuth();
     const isCurrent = currentSong?.id === song.id;
     const isPlayingCurrent = isCurrent && isPlaying;
     const [hover, setHover] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
-
-    // Check if current user can delete this song
-    const canDelete = isAdmin() || (song.uploadedBy === currentUser?.uid);
 
     useEffect(() => {
         // Check if song is liked from localStorage
@@ -89,6 +84,7 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
             onMouseLeave={() => {
                 setHover(false);
                 setShowMenu(false);
+                setShowPlaylistMenu(false);
             }}
         >
             {/* Index / Play Button */}
@@ -113,28 +109,13 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                 )}
                 <div className="flex flex-col truncate pr-1 sm:pr-2 min-w-0">
                     <span className={`text-xs sm:text-[16px] font-normal truncate mb-[1px] sm:mb-[2px] ${isCurrent ? 'text-[#ff6b1a]' : 'text-white'}`}>{song.title}</span>
-                    <div className="flex items-center gap-2 text-xs">
-                        <Link
-                            to={`/artist/${encodeURIComponent(song.artist)}`}
-                            className="text-[#b3b3b3] hover:text-white hover:underline transition-colors truncate flex items-center gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {song.artist}
-                            <VerifiedBadge artistName={song.artist} size={14} />
-                        </Link>
-                        {song.uploaderUsername && (
-                            <>
-                                <span className="text-[#666]">•</span>
-                                <Link
-                                    to={`/user/${encodeURIComponent(song.uploaderUsername)}`}
-                                    className="text-[#888] hover:text-white hover:underline transition-colors truncate"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    by {song.uploaderUsername}
-                                </Link>
-                            </>
-                        )}
-                    </div>
+                    <Link
+                        to={`/artist/${encodeURIComponent(song.artist)}`}
+                        className="text-xs text-[#b3b3b3] hover:text-white hover:underline transition-colors truncate"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {song.artist}
+                    </Link>
                 </div>
             </div>
 
@@ -148,11 +129,8 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                 </Link>
             </div>
 
-            {/* Action Area (Play Count + Duration + Heart + More) */}
+            {/* Action Area (Duration + Heart + More) */}
             <div className="flex items-center justify-end gap-x-1 sm:gap-x-4 flex-shrink-0">
-                <span className="text-xs sm:text-sm text-[#b3b3b3] font-normal min-w-[40px] text-right hidden sm:block">
-                    {formatPlayCount(song.playCount || 0)}
-                </span>
                 <button
                     onClick={handleFavorite}
                     className={`transition-colors hidden sm:block ${isLiked ? 'text-[#ff6b1a]' : 'text-[#b3b3b3] hover:text-white'} ${hover ? 'visible' : 'invisible'}`}
@@ -216,7 +194,7 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
                                 <Copy size={14} />
                                 Share
                             </button>
-                            {canDelete && (
+                            {isAdmin() && (
                                 <>
                                     <hr className="border-[#3e3e3e] my-2" />
                                     <button

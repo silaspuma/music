@@ -1,233 +1,187 @@
 import React, { useState, useEffect } from 'react';
 import { getSongs } from '../services/musicService';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Clock, User, Disc3, TrendingUp } from 'lucide-react';
+import { Play, Music, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getTrendingSongs } from '../utils/playCount';
-import VerifiedBadge from '../components/VerifiedBadge';
+
+const AlbumCard = ({ album, onClick }) => (
+    <Link
+        to={`/album/${encodeURIComponent(album.name)}`}
+        className="bg-[#181818] p-4 rounded-lg hover:bg-[#282828] transition-all duration-300 group cursor-pointer relative"
+    >
+        <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-lg overflow-hidden">
+            {album.coverUrl ? (
+                <img src={album.coverUrl} alt={album.name} className="w-full aspect-square object-cover" />
+            ) : (
+                <div className="w-full aspect-square bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] flex items-center justify-center">
+                    <Music size={48} className="text-white" />
+                </div>
+            )}
+            <button 
+                onClick={(e) => {
+                    e.preventDefault();
+                    onClick();
+                }}
+                className="absolute bottom-2 right-2 bg-[#ff6b1a] rounded-full p-3 text-white shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-[#ff8c42]"
+            >
+                <Play fill="currentColor" size={20} className="ml-0.5" />
+            </button>
+        </div>
+        <h3 className="font-bold text-white mb-2 truncate text-base">{album.name}</h3>
+        <p className="text-sm text-[#a7a7a7] truncate">{album.artist}</p>
+    </Link>
+);
+
+const ArtistCard = ({ artist }) => (
+    <Link
+        to={`/artist/${encodeURIComponent(artist.name)}`}
+        className="bg-[#181818] p-4 rounded-lg hover:bg-[#282828] transition-all duration-300 cursor-pointer group"
+    >
+        <div className="relative mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.5)] rounded-full overflow-hidden aspect-square">
+            {artist.coverUrl ? (
+                <img src={artist.coverUrl} alt={artist.name} className="w-full h-full object-cover" />
+            ) : (
+                <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                    <Users size={48} className="text-white" />
+                </div>
+            )}
+        </div>
+        <h3 className="font-bold text-white truncate text-base text-center">{artist.name}</h3>
+        <p className="text-xs text-[#a7a7a7] text-center mt-1">Artist</p>
+    </Link>
+);
 
 const Home = () => {
-    const [recentUploads, setRecentUploads] = useState([]);
-    const [trendingSongs, setTrendingSongs] = useState([]);
+    const [recentAlbums, setRecentAlbums] = useState([]);
+    const [trendingArtists, setTrendingArtists] = useState([]);
+    const [allSongs, setAllSongs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { playQueue, setCurrentSongIndex } = usePlayer();
+    const { playQueue } = usePlayer();
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const songs = await getSongs();
-                
-                // Sort by upload date and take top 50 most recent
-                const sorted = songs
-                    .sort((a, b) => {
-                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || new Date(0);
-                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt || new Date(0);
-                        return dateB - dateA;
-                    })
-                    .slice(0, 50);
-                
-                setRecentUploads(sorted);
-                
-                // Get trending songs (most played)
-                const trending = getTrendingSongs(songs, 10);
-                setTrendingSongs(trending);
-            } catch (error) {
-                console.error('Error fetching songs:', error);
-            } finally {
-                setLoading(false);
-            }
+            const songs = await getSongs();
+            setAllSongs(songs);
+            
+            // Get unique albums with their newest upload date
+            const albumMap = new Map();
+            songs.forEach(song => {
+                const key = `${song.album}-${song.artist}`;
+                if (!albumMap.has(key)) {
+                    albumMap.set(key, {
+                        name: song.album,
+                        artist: song.artist,
+                        coverUrl: song.coverUrl,
+                        uploadedAt: song.uploadedAt || new Date(),
+                        songs: [song]
+                    });
+                } else {
+                    albumMap.get(key).songs.push(song);
+                }
+            });
+            
+            // Sort by upload date and take top 5
+            const sortedAlbums = Array.from(albumMap.values())
+                .sort((a, b) => {
+                    const dateA = a.uploadedAt?.toDate ? a.uploadedAt.toDate() : a.uploadedAt;
+                    const dateB = b.uploadedAt?.toDate ? b.uploadedAt.toDate() : b.uploadedAt;
+                    return dateB - dateA;
+                })
+                .slice(0, 5);
+            
+            setRecentAlbums(sortedAlbums);
+            
+            // Get top 5 artists by play count
+            const artistMap = new Map();
+            songs.forEach(song => {
+                if (!artistMap.has(song.artist)) {
+                    artistMap.set(song.artist, {
+                        name: song.artist,
+                        coverUrl: song.coverUrl,
+                        playCount: song.playCount || 0
+                    });
+                } else {
+                    artistMap.get(song.artist).playCount += (song.playCount || 0);
+                }
+            });
+            
+            const topArtists = Array.from(artistMap.values())
+                .sort((a, b) => b.playCount - a.playCount)
+                .slice(0, 5);
+            
+            setTrendingArtists(topArtists);
+            setLoading(false);
         };
         fetchData();
     }, []);
 
-    const formatTimeAgo = (timestamp) => {
-        if (!timestamp) return 'Recently';
-        const date = timestamp.toDate ? timestamp.toDate() : timestamp;
-        const seconds = Math.floor((new Date() - date) / 1000);
-        
-        if (seconds < 60) return 'Just now';
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-        return `${Math.floor(seconds / 604800)}w ago`;
+    const handlePlayAlbum = (album) => {
+        if (album.songs && album.songs.length > 0) {
+            playQueue(album.songs, 0);
+        }
     };
 
-    const formatDuration = (seconds) => {
-        if (!seconds) return "-:-";
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    };
-
-    const handlePlay = (song) => {
-        const index = recentUploads.findIndex(s => s.id === song.id);
-        playQueue(recentUploads, index);
+    const greeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good morning";
+        if (hour < 18) return "Good afternoon";
+        return "Good evening";
     };
 
     return (
         <div className="relative pb-32 bg-[#121212] min-h-full rounded-lg overflow-hidden">
             {/* Gradient Background */}
-            <div className="absolute top-0 left-0 w-full h-[340px] bg-gradient-to-b from-[#1ed760]/10 to-[#121212] z-0 pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-full h-[340px] bg-gradient-to-b from-[#1a1a1a] to-[#121212] z-0 pointer-events-none"></div>
 
             <div className="relative z-10 p-6 md:p-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">Stream</h1>
-                    <p className="text-sm text-[#b3b3b3]">Discover new music from the community</p>
-                </div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">{greeting()}</h1>
+                <p className="text-sm text-[#b3b3b3] mb-8">Welcome to Pumafy - Your school-wide music service 🐆</p>
 
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
-                        <div className="text-[#a7a7a7]">Loading stream...</div>
+                        <div className="text-[#a7a7a7]">Loading your music...</div>
                     </div>
                 ) : (
                     <>
-                        {/* Trending Section */}
-                        {trendingSongs.length > 0 && (
-                            <div className="mb-12">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <TrendingUp size={24} className="text-[#ff6b1a]" />
-                                    <h2 className="text-2xl font-bold">Trending Now</h2>
+                        {/* Trending Artists Section */}
+                        {trendingArtists.length > 0 && (
+                            <section className="mb-10">
+                                <div className="flex items-center mb-5">
+                                    <h2 className="text-xl md:text-2xl font-bold tracking-tight">Trending Artists</h2>
                                 </div>
-                                <div className="space-y-2">
-                                    {trendingSongs.map((song, index) => (
-                                        <div
-                                            key={song.id}
-                                            className="group flex items-center gap-4 p-3 bg-[#181818] hover:bg-[#282828] rounded-lg transition-all cursor-pointer"
-                                            onClick={() => {
-                                                const fullIndex = recentUploads.findIndex(s => s.id === song.id);
-                                                if (fullIndex !== -1) {
-                                                    playQueue(recentUploads, fullIndex);
-                                                } else {
-                                                    playQueue([song], 0);
-                                                }
-                                            }}
-                                        >
-                                            {/* Rank */}
-                                            <div className="w-8 text-center">
-                                                <span className="text-2xl font-black text-[#ff6b1a]">{index + 1}</span>
-                                            </div>
-
-                                            {/* Album Cover */}
-                                            <div className="relative flex-shrink-0 w-14 h-14 bg-[#282828] rounded overflow-hidden">
-                                                {song.imageUrl ? (
-                                                    <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <Disc3 size={24} className="text-[#535353]" />
-                                                    </div>
-                                                )}
-                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div className="bg-[#1ed760] rounded-full p-2">
-                                                        <Play size={16} fill="black" className="text-black" />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Song Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-white truncate">{song.title}</h3>
-                                                <div className="flex items-center gap-2 text-sm text-[#b3b3b3]">
-                                                    <Link 
-                                                        to={`/artist/${encodeURIComponent(song.artist)}`}
-                                                        className="hover:underline truncate flex items-center gap-1"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        {song.artist}
-                                                        <VerifiedBadge artistName={song.artist} size={14} />
-                                                    </Link>
-                                                </div>
-                                            </div>
-
-                                            {/* Play Count */}
-                                            <div className="hidden md:block text-sm text-[#b3b3b3]">
-                                                {(song.playCount || 0).toLocaleString()} plays
-                                            </div>
-                                        </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {trendingArtists.map((artist) => (
+                                        <ArtistCard key={artist.name} artist={artist} />
                                     ))}
                                 </div>
-                            </div>
+                            </section>
                         )}
 
-                        {/* Recent Uploads */}
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6">Recent Uploads</h2>
-                            {recentUploads.length === 0 ? (
-                                <div className="py-12 text-center bg-[#181818] rounded-lg border-2 border-dashed border-[#282828]">
-                                    <Disc3 size={48} className="mx-auto mb-4 text-[#535353]" />
-                                    <p className="text-[#a7a7a7] mb-2">No uploads yet</p>
-                                    <p className="text-sm text-[#535353]">Be the first to upload music!</p>
+                        {/* Recently Added Albums Section */}
+                        <section className="mb-10">
+                            <div className="flex items-center mb-5">
+                                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Recently Added Albums</h2>
+                            </div>
+                            {recentAlbums.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {recentAlbums.map((album) => (
+                                        <AlbumCard 
+                                            key={`${album.name}-${album.artist}`} 
+                                            album={album}
+                                            onClick={() => handlePlayAlbum(album)}
+                                        />
+                                    ))}
                                 </div>
                             ) : (
-                                <div className="space-y-3">{recentUploads.map((song) => (
-                            <div
-                                key={song.id}
-                                className="group flex items-center gap-4 p-3 bg-[#181818] hover:bg-[#282828] rounded-lg transition-all cursor-pointer"
-                                onClick={() => handlePlay(song)}
-                            >
-                                {/* Album Cover */}
-                                <div className="relative flex-shrink-0 w-14 h-14 bg-[#282828] rounded overflow-hidden">
-                                    {song.imageUrl ? (
-                                        <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <Disc3 size={24} className="text-[#535353]" />
-                                        </div>
-                                    )}
-                                    {/* Play Button Overlay */}
-                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <div className="bg-[#1ed760] rounded-full p-2">
-                                            <Play size={16} fill="black" className="text-black" />
-                                        </div>
-                                    </div>
+                                <div className="py-12 text-center bg-[#181818] rounded-lg border-2 border-dashed border-[#282828]">
+                                    <Music size={48} className="mx-auto mb-4 text-[#535353]" />
+                                    <p className="text-[#a7a7a7] mb-2">No albums yet</p>
+                                    <p className="text-sm text-[#535353]">Upload some music to get started</p>
                                 </div>
-
-                                {/* Song Info */}
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-white truncate">{song.title}</h3>
-                                    <div className="flex items-center gap-2 text-sm text-[#b3b3b3]">
-                                        <Link 
-                                            to={`/artist/${encodeURIComponent(song.artist)}`}
-                                            className="hover:underline truncate flex items-center gap-1"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            {song.artist}
-                                            <VerifiedBadge artistName={song.artist} size={14} />
-                                        </Link>
-                                        <span>•</span>
-                                        {song.uploaderUsername && (
-                                            <>
-                                                <span className="flex items-center gap-1 truncate">
-                                                    <User size={12} />
-                                                    <Link
-                                                        to={`/user/${encodeURIComponent(song.uploaderUsername)}`}
-                                                        className="hover:underline"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        {song.uploaderUsername}
-                                                    </Link>
-                                                </span>
-                                                <span>•</span>
-                                            </>
-                                        )}
-                                        <span className="flex items-center gap-1">
-                                            <Clock size={12} />
-                                            {formatTimeAgo(song.createdAt)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Album & Duration */}
-                                <div className="hidden md:flex items-center gap-8 text-sm text-[#b3b3b3]">
-                                    <span className="w-32 truncate">{song.album}</span>
-                                    <span className="w-12 text-right">{formatDuration(song.duration)}</span>
-                                </div>
-                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
+                            )}
+                        </section>
+                    </>
+                )}
             </div>
         </div>
     );

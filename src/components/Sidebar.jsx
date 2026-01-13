@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Search, Radio, Upload, Heart, LogIn, ShieldCheck } from 'lucide-react';
+import { Search, Library, Heart, Settings, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
 const Sidebar = ({ onNavigate }) => {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const location = useLocation();
-    const { currentUser, userProfile, logout, isAdmin } = useAuth();
+    const { currentUser, userProfile, logout } = useAuth();
 
     return (
         <div className="w-[320px] bg-[#000000e6] h-full flex flex-col pt-6 pb-3 text-[#b3b3b3] gap-y-3 sticky top-0 border-r border-[#181818]">
@@ -21,27 +21,24 @@ const Sidebar = ({ onNavigate }) => {
 
             {/* Main Nav */}
             <div className="flex flex-col px-3 gap-1">
-                <NavItem to="/" icon={<Radio size={26} />} label="Stream" active={location.pathname === '/'} onNavigate={onNavigate} />
-                <NavItem to="/library" icon={<Upload size={26} />} label="Your Uploads" active={location.pathname === '/library'} onNavigate={onNavigate} />
+                <NavItem to="/" icon={<Library size={26} />} label="All Songs" active={location.pathname === '/' || location.pathname === '/library'} onNavigate={onNavigate} />
                 <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} onNavigate={onNavigate} />
             </div>
 
             <div className="mt-4 pt-1 px-3 flex flex-col">
                 <div className="mb-2">
-                    {isAdmin() && (
-                        <NavItem 
-                            to="/manage-artists" 
-                            icon={<ShieldCheck size={26} />} 
-                            label="Manage Artists" 
-                            active={location.pathname === '/manage-artists'} 
-                            onNavigate={onNavigate} 
-                        />
-                    )}
                     <NavItem 
                         to="/liked" 
                         icon={<div className="bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
                         label="Liked Songs" 
                         active={location.pathname === '/liked'} 
+                        onNavigate={onNavigate} 
+                    />
+                    <NavItem 
+                        to="/settings" 
+                        icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Settings size={14} /></div>} 
+                        label="Settings" 
+                        active={location.pathname === '/settings'} 
                         onNavigate={onNavigate} 
                     />
                 </div>
