@@ -35,12 +35,19 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
     }, [isSubmitting]);
 
     const submitRequest = async () => {
+        if (!currentUser) {
+            alert('You must be logged in to submit a request.');
+            setIsSubmitting(false);
+            setProgress(0);
+            return;
+        }
+
         try {
             await addDoc(collection(db, 'artistRequests'), {
                 artistName: artistName.trim(),
                 requestedBy: currentUser.uid,
                 requestedByEmail: currentUser.email,
-                requestedByUsername: userProfile?.username || 'Unknown',
+                requestedByUsername: userProfile?.username || currentUser.email?.split('@')[0] || 'Unknown',
                 status: 'pending',
                 createdAt: serverTimestamp()
             });
@@ -169,7 +176,7 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
 
                         {!isSubmitting && (
                             <p className="text-xs text-[#b3b3b3] text-center mt-4">
-                                Hold for 15 seconds to submit your request
+                                We will add all of the artist's songs in 1-3 business days after approval.
                             </p>
                         )}
                     </>

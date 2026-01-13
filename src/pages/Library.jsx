@@ -16,7 +16,7 @@ const Library = () => {
     const [showRequestArtist, setShowRequestArtist] = useState(false);
     const fileInputRef = useRef(null);
     const { playQueue } = usePlayer();
-    const { isAdmin } = useAuth();
+    const { isAdmin, currentUser } = useAuth();
 
     const fetchSongs = async () => {
         setLoading(true);
