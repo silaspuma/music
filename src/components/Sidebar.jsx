@@ -62,7 +62,7 @@ const Sidebar = ({ onNavigate }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-white truncate">{userProfile?.username || 'User'}</p>
-                            <p className="text-xs text-[#a7a7a7]">{(userProfile?.listeningMinutes || 0).toFixed(2)} min listened</p>
+                            <p className="text-xs text-[#a7a7a7]">{Number(userProfile?.listeningMinutes || 0).toFixed(2)} min listened</p>
                         </div>
                         <button
                             onClick={logout}
