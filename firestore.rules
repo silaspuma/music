@@ -31,15 +31,23 @@ service cloud.firestore {
       allow create: if request.auth != null &&
                       request.resource.data.uploadedBy == request.auth.uid;
       
-      // Users can update their own songs, admins can update any song, or authenticated users can update playCount/lastPlayed
+      // Users can update their own songs, admins can update any song
+      // OR any authenticated user can update playCount and lastPlayed
       allow update: if request.auth != null && 
-                      (resource.data.uploadedBy == request.auth.uid || isAdmin() ||
-                       (request.resource.data.playCount > resource.data.playCount && 
-                        request.resource.data.keys().hasOnly(['playCount', 'lastPlayed'])));
+                      (resource.data.uploadedBy == request.auth.uid || 
+                       isAdmin() ||
+                       request.resource.data.keys().hasOnly(['playCount', 'lastPlayed']));
       
       // Users can delete their own songs, admins can delete any song
       allow delete: if request.auth != null && 
                       (resource.data.uploadedBy == request.auth.uid || isAdmin());
+    }
+    
+    // Liked Songs collection
+    match /likedSongs/{likeId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     
     // Artist Requests collection

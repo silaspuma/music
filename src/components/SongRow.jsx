@@ -89,7 +89,6 @@ const SongRow = ({ song, index, onPlay, onDelete }) => {
             onMouseLeave={() => {
                 setHover(false);
                 setShowMenu(false);
-                setShowPlaylistMenu(false);
             }}
         >
             {/* Index / Play Button */}
