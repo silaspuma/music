@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon, Filter, X, Play, Music } from 'lucide-react';
+import { Search as SearchIcon, Filter, X, Play, Music, User, Disc3 } from 'lucide-react';
 import { searchSongs, getSongs } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
@@ -192,12 +192,19 @@ const Search = () => {
                                                     to={`/artist/${encodeURIComponent(artist.name)}`}
                                                     className="group bg-[#181818] hover:bg-[#282828] rounded-lg p-4 transition-colors"
                                                 >
-                                                    <div className="aspect-square rounded-full overflow-hidden mb-4 shadow-lg">
-                                                        <img 
-                                                            src={artist.coverUrl} 
-                                                            alt={artist.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
+                                                    <div className="aspect-square rounded-full overflow-hidden mb-4 shadow-lg bg-[#282828] flex items-center justify-center">
+                                                        {artist.coverUrl ? (
+                                                            <img 
+                                                                src={artist.coverUrl} 
+                                                                alt={artist.name}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'block';
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <User size={48} className="text-[#666] absolute" style={{ display: artist.coverUrl ? 'none' : 'block' }} />
                                                     </div>
                                                     <h3 className="font-bold text-white mb-1 truncate">{artist.name}</h3>
                                                     <p className="text-sm text-[#a7a7a7]">Artist • {artist.songCount} {artist.songCount === 1 ? 'song' : 'songs'}</p>
@@ -218,12 +225,19 @@ const Search = () => {
                                                     to={`/album/${encodeURIComponent(album.name)}`}
                                                     className="group bg-[#181818] hover:bg-[#282828] rounded-lg p-4 transition-colors"
                                                 >
-                                                    <div className="aspect-square rounded-lg overflow-hidden mb-4 shadow-lg">
-                                                        <img 
-                                                            src={album.coverUrl} 
-                                                            alt={album.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
+                                                    <div className="aspect-square rounded-lg overflow-hidden mb-4 shadow-lg bg-[#282828] flex items-center justify-center">
+                                                        {album.coverUrl ? (
+                                                            <img 
+                                                                src={album.coverUrl} 
+                                                                alt={album.name}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'block';
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <Disc3 size={48} className="text-[#666] absolute" style={{ display: album.coverUrl ? 'none' : 'block' }} />
                                                     </div>
                                                     <h3 className="font-bold text-white mb-1 truncate">{album.name}</h3>
                                                     <p className="text-sm text-[#a7a7a7] truncate">{album.artist}</p>

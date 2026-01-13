@@ -25,6 +25,7 @@ const VerifiedBadge = ({ artistName, size = 16, className = "" }) => {
         <BadgeCheck 
             size={size} 
             className={`text-[#3d91f4] flex-shrink-0 ${className}`}
+            fill="currentColor"
             title="Verified Artist"
         />
     );
