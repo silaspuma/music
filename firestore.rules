@@ -31,9 +31,11 @@ service cloud.firestore {
       allow create: if request.auth != null &&
                       request.resource.data.uploadedBy == request.auth.uid;
       
-      // Users can update their own songs, admins can update any song
+      // Users can update their own songs, admins can update any song, or authenticated users can update playCount/lastPlayed
       allow update: if request.auth != null && 
-                      (resource.data.uploadedBy == request.auth.uid || isAdmin());
+                      (resource.data.uploadedBy == request.auth.uid || isAdmin() ||
+                       (request.resource.data.playCount > resource.data.playCount && 
+                        request.resource.data.keys().hasOnly(['playCount', 'lastPlayed'])));
       
       // Users can delete their own songs, admins can delete any song
       allow delete: if request.auth != null && 

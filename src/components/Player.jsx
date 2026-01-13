@@ -2,13 +2,37 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart } from 'lucide-react';
 import QueueView from './QueueView';
+import { toggleLikeSong, isLiked } from '../services/musicService';
+import { useAuth } from '../services/auth';
 
 const Player = () => {
     const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat } = usePlayer();
+    const { currentUser } = useAuth();
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isHoveringSeek, setIsHoveringSeek] = useState(false);
     const [showQueue, setShowQueue] = useState(false);
+    const [isLikedSong, setIsLikedSong] = useState(false);
+    const [likeLoading, setLikeLoading] = useState(false);
+
+    // Check if current song is liked
+    useEffect(() => {
+        const checkIfLiked = async () => {
+            if (currentSong && currentUser) {
+                const liked = await isLiked(currentSong.id);
+                setIsLikedSong(liked);
+            }
+        };
+        checkIfLiked();
+    }, [currentSong, currentUser]);
+
+    const handleToggleLike = async () => {
+        if (!currentUser || !currentSong) return;
+        setLikeLoading(true);
+        await toggleLikeSong(currentSong.id);
+        setIsLikedSong(!isLikedSong);
+        setLikeLoading(false);
+    };
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -63,7 +87,13 @@ const Player = () => {
                     <span className="text-sm font-medium hover:underline cursor-pointer truncate text-white">{currentSong.title}</span>
                     <span className="text-xs text-[#b3b3b3] hover:underline cursor-pointer hover:text-white truncate">{currentSong.artist}</span>
                 </div>
-                <button className="text-[#b3b3b3] hover:text-white transition-colors"><Heart size={16} /></button>
+                <button 
+                    onClick={handleToggleLike}
+                    disabled={likeLoading}
+                    className={`transition-colors ${isLikedSong ? 'text-[#1ed760]' : 'text-[#b3b3b3] hover:text-white'}`}
+                >
+                    <Heart size={16} fill={isLikedSong ? 'currentColor' : 'none'} />
+                </button>
             </div>
 
             {/* Center: Controls */}
