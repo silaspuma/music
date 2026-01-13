@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { trackPlay } from '../services/musicService';
+import { updateListeningSession, clearListeningSession, updatePlayState, subscribeToListeningSessions } from '../services/listeningSessionService';
+import { useAuth } from './AuthContext';
+import AuthModal from '../components/AuthModal';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
 const PlayerContext = createContext();
 
 export function PlayerProvider({ children }) {
+    const { currentUser, userProfile } = useAuth();
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
@@ -14,6 +20,7 @@ export function PlayerProvider({ children }) {
     const [originalQueue, setOriginalQueue] = useState([]);
     const [sleepTimer, setSleepTimer] = useState(null); // null or timestamp when to pause
     const [sleepTimerMinutes, setSleepTimerMinutes] = useState(0); // minutes remaining
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const audioRef = useRef(new Audio());
     const sleepTimerInterval = useRef(null);
 
@@ -95,6 +102,67 @@ export function PlayerProvider({ children }) {
         audioRef.current.volume = volume;
     }, [volume]);
 
+    // Sync current song to Firestore for listening sessions
+    useEffect(() => {
+        if (currentUser && userProfile) {
+            if (currentSong && isPlaying) {
+                updateListeningSession(currentUser.uid, userProfile.username, currentSong);
+            } else if (!currentSong) {
+                clearListeningSession(currentUser.uid);
+            }
+        }
+    }, [currentSong, isPlaying, currentUser, userProfile]);
+
+    // Sync play state to Firestore
+    useEffect(() => {
+        if (currentUser && currentSong) {
+            updatePlayState(currentUser.uid, isPlaying);
+        }
+    }, [isPlaying, currentUser, currentSong]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (currentUser) {
+                clearListeningSession(currentUser.uid);
+            }
+        };
+    }, [currentUser]);
+
+    // Listen for admin controls
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const sessionRef = doc(db, 'listeningSessions', currentUser.uid);
+        const unsubscribe = onSnapshot(sessionRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                
+                // Handle admin play/pause control
+                if (data.adminControlled && data.isPlaying !== undefined) {
+                    if (data.isPlaying !== isPlaying) {
+                        setIsPlaying(data.isPlaying);
+                    }
+                }
+                
+                // Handle admin skip commands
+                if (data.skipCommand) {
+                    const { direction, timestamp } = data.skipCommand;
+                    // Only process if this is a new command (within last 2 seconds)
+                    if (Date.now() - timestamp < 2000) {
+                        if (direction === 'next') {
+                            playNext();
+                        } else if (direction === 'previous') {
+                            playPrevious();
+                        }
+                    }
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, [currentUser, isPlaying]);
+
     // Handle song changes
     useEffect(() => {
         if (currentSong) {
@@ -129,6 +197,11 @@ export function PlayerProvider({ children }) {
 
     const playSong = (song) => {
         if (!song) return;
+        // Require authentication to play songs
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
         setCurrentSong(song);
         setQueue([song]);
         setCurrentIndex(0);
@@ -137,6 +210,11 @@ export function PlayerProvider({ children }) {
 
     const playQueue = (newQueue, startIndex = 0) => {
         if (!newQueue || newQueue.length === 0) return;
+        // Require authentication to play songs
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
         const safeIndex = Math.min(Math.max(startIndex, 0), newQueue.length - 1);
         setOriginalQueue(newQueue);
         setQueue(newQueue);
@@ -384,12 +462,15 @@ export function PlayerProvider({ children }) {
         playNextInQueue,
         sleepTimer,
         sleepTimerMinutes,
-        setSleepTimerDuration
+        setSleepTimerDuration,
+        showAuthModal,
+        setShowAuthModal
     };
 
     return (
         <PlayerContext.Provider value={value}>
             {children}
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </PlayerContext.Provider>
     );
 }
