@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'silasputerbaugh1@gmail.com';
+    }
+    
+    // Music files - stored in songs/ directory
+    match /songs/{songFile} {
+      // Anyone can read songs
+      allow read: if true;
+      // Authenticated users can upload songs
+      allow write: if isAuthenticated();
+      // Admins can delete any song
+      allow delete: if isAdmin();
+    }
+    
+    // Album/Playlist cover images - stored in covers/ directory
+    match /covers/{imageFile} {
+      // Anyone can read covers
+      allow read: if true;
+      // Authenticated users can upload covers
+      allow write: if isAuthenticated();
+      // Admins can delete any cover
+      allow delete: if isAdmin();
+    }
+    
+    // User profile images (if needed in future)
+    match /profiles/{userId}/{imageFile} {
+      // Anyone can read profile images
+      allow read: if true;
+      // Users can upload their own profile image
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can delete any profile image
+      allow delete: if isAdmin();
+    }
+  }
+}
