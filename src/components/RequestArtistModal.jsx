@@ -104,7 +104,7 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
                     <div className="text-center py-8">
                         <CheckCircle size={64} className="text-[#ff6b1a] mx-auto mb-4" />
                         <h2 className="text-2xl font-bold mb-2">Request Submitted!</h2>
-                        <p className="text-[#b3b3b3]">Your artist request has been sent to the admin.</p>
+                        <p className="text-[#b3b3b3]">Your artist request should be approved within a couple days, ty!</p>
                     </div>
                 ) : (
                     <>
