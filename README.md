@@ -36,6 +36,7 @@
 ### Prerequisites
 - Node.js 16+
 - Firebase account with Firestore and Storage enabled
+- Firebase CLI (for deploying rules): `npm install -g firebase-tools`
 
 ### Installation
 
@@ -47,7 +48,17 @@ npm install
 1. Create a Firebase project
 2. Enable Firestore Database
 3. Enable Firebase Storage
-4. Copy your config to `src/firebase.config.js`
+4. Enable Firebase Authentication (Email/Password)
+5. Copy your config to `src/firebase.config.js`
+6. Deploy Firestore and Storage rules:
+   ```bash
+   firebase login
+   firebase init  # Select your project
+   firebase deploy --only firestore:rules
+   firebase deploy --only storage:rules
+   ```
+   
+**Important:** The Firestore rules allow the admin user (`silasputerbaugh1@gmail.com`) to access all data and control other users' playback. Regular users can only access their own data.
 
 ### Development
 
