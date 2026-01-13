@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { isArtistVerified } from '../services/artistService';
-import { ShieldCheck } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 
 const VerifiedBadge = ({ artistName, size = 16, className = "" }) => {
     const [isVerified, setIsVerified] = useState(false);
@@ -22,7 +22,7 @@ const VerifiedBadge = ({ artistName, size = 16, className = "" }) => {
     if (loading || !isVerified) return null;
 
     return (
-        <ShieldCheck 
+        <BadgeCheck 
             size={size} 
             className={`text-[#3d91f4] flex-shrink-0 ${className}`}
             title="Verified Artist"
