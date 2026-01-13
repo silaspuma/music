@@ -90,7 +90,7 @@ const Settings = () => {
         });
 
         return () => unsubscribe();
-    }, [isAdmin]);
+    }, [currentUser, isAdmin]);
 
     const handleUpdateRequestStatus = async (requestId, status) => {
         try {
@@ -137,66 +137,57 @@ const Settings = () => {
                         <Palette className="text-[#ff6b1a]" size={24} />
                         <h2 className="text-2xl font-bold">Theme</h2>
                     </div>
-                    <div className="bg-[#1a1a1a] rounded-lg p-6 relative">
-                        <p className="text-[#b3b3b3] mb-4">Choose your preferred color scheme</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {Object.keys(themes).map((themeKey) => {
-                                const theme = themes[themeKey];
-                                const isActive = currentTheme === themeKey;
-                                return (
-                                    <button
-                                        key={themeKey}
-                                        onClick={() => setCurrentTheme(themeKey)}
-                                        className={`p-4 rounded-lg border-2 transition-all ${
-                                            isActive 
-                                                ? 'border-[#1ed760] bg-[#2a2a2a]' 
-                                                : 'border-[#3a3a3a] hover:border-[#5a5a5a] bg-[#181818]'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div 
-                                                className="w-12 h-12 rounded-full"
-                                                style={{ background: theme.primary }}
-                                            ></div>
-                                            <div className="text-left">
-                                                <p className="font-bold">{theme.name}</p>
-                                                {isActive && (
-                                                    <p className="text-xs text-[#1ed760]">Active</p>
-                                                )}
+                    <div className="bg-[#1a1a1a] rounded-lg p-6 relative overflow-hidden">
+                        {/* Blurred Content */}
+                        <div className="blur-sm select-none pointer-events-none">
+                            <p className="text-[#b3b3b3] mb-4">Choose your preferred color scheme</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Object.keys(themes).map((themeKey) => {
+                                    const theme = themes[themeKey];
+                                    return (
+                                        <div
+                                            key={themeKey}
+                                            className="p-4 rounded-lg border-2 border-[#3a3a3a] bg-[#181818]"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div 
+                                                    className="w-12 h-12 rounded-full"
+                                                    style={{ background: theme.primary }}
+                                                ></div>
+                                                <div className="text-left">
+                                                    <p className="font-bold">{theme.name}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div 
+                                                    className="flex-1 h-8 rounded" 
+                                                    style={{ background: theme.bg }}
+                                                ></div>
+                                                <div 
+                                                    className="flex-1 h-8 rounded" 
+                                                    style={{ background: theme.bgLight }}
+                                                ></div>
+                                                <div 
+                                                    className="flex-1 h-8 rounded" 
+                                                    style={{ background: theme.bgLighter }}
+                                                ></div>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <div 
-                                                className="flex-1 h-8 rounded" 
-                                                style={{ background: theme.bg }}
-                                            ></div>
-                                            <div 
-                                                className="flex-1 h-8 rounded" 
-                                                style={{ background: theme.bgLight }}
-                                            ></div>
-                                            <div 
-                                                className="flex-1 h-8 rounded" 
-                                                style={{ background: theme.bgLighter }}
-                                            ></div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
-                        <button
-                            onClick={() => setShowCustomThemeModal(true)}
-                            className="mt-6 bg-gradient-to-r from-[#1ed760] to-[#1aa34a] hover:from-[#1fdf64] hover:to-[#1bb350] text-black font-bold py-2 px-6 rounded-full transition flex items-center gap-2"
-                        >
-                            <Palette size={16} />
-                            Create Custom Theme
-                        </button>
-                        {customTheme && (
-                            <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg">
-                                <p className="text-sm text-[#b3b3b3]">
-                                    Custom theme active: <span className="text-[#1ed760] font-bold">{customTheme.name}</span>
+                        
+                        {/* Coming Soon Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a]/60 backdrop-blur-[2px]">
+                            <div className="text-center px-6 py-8 bg-[#2a2a2a] rounded-xl border border-[#3a3a3a] shadow-2xl max-w-md">
+                                <Palette size={48} className="text-[#ff6b1a] mx-auto mb-4" />
+                                <h3 className="text-3xl font-bold mb-2">Coming Soon</h3>
+                                <p className="text-[#b3b3b3] text-sm">
+                                    Custom themes and color schemes will be available in a future update. Stay tuned!
                                 </p>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
 
@@ -275,10 +266,13 @@ const Settings = () => {
                 )}
 
                 {/* Artist Requests (Admin Only) */}
-                {isAdmin() && artistRequests.length > 0 && (
+                {isAdmin() && (
                     <div className="mt-8">
                         <h2 className="text-2xl font-bold mb-4">Artist Requests ({artistRequests.length})</h2>
                         <div className="bg-[#1a1a1a] rounded-lg p-6">
+                            {artistRequests.length === 0 ? (
+                                <p className="text-[#a7a7a7] text-center py-8">No artist requests yet</p>
+                            ) : (
                             <div className="space-y-3">
                                 {artistRequests.map((request) => (
                                     <div 
@@ -335,6 +329,7 @@ const Settings = () => {
                                     </div>
                                 ))}
                             </div>
+                            )}
                         </div>
                     </div>
                 )}
