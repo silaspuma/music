@@ -56,17 +56,17 @@ service cloud.firestore {
     // Liked songs collection
     match /likedSongs/{likeId} {
       // Users can read their own liked songs
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
       // Users can create their own likes
       allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
       // Users can delete their own likes
-      allow delete: if isAuthenticated();
+      allow delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
     }
     
     // Recently played collection
     match /recentlyPlayed/{playId} {
-      // Users can read their own recently played
-      allow read: if isAuthenticated();
+      // Users can read their own recently played, admins can read all
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
       // Users can create their own play records
       allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
       // No one can update or delete (these are historical records)
@@ -77,8 +77,9 @@ service cloud.firestore {
     match /listeningSessions/{userId} {
       // Admins can read all sessions, users can read their own
       allow read: if isAdmin() || isOwner(userId);
-      // Users can create/update their own session, admins can update any session
-      allow create: if isOwner(userId);
+      // Users can create their own session (userId in document must match)
+      allow create: if isOwner(userId) && isOwner(request.resource.data.userId);
+      // Users can update their own session, admins can update any session
       allow update: if isOwner(userId) || isAdmin();
       // Users can delete their own session
       allow delete: if isOwner(userId);
