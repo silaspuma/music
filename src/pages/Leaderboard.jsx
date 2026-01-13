@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trophy, Medal, Award } from 'lucide-react';
+import { getLeaderboard } from '../services/userService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Leaderboard = () => {
-    // Placeholder until authentication is implemented
-    const mockUsers = [
-        { id: 1, username: 'MusicLover123', minutes: 2847, rank: 1 },
-        { id: 2, username: 'JazzFan', minutes: 2456, rank: 2 },
-        { id: 3, username: 'RockStar', minutes: 2201, rank: 3 },
-        { id: 4, username: 'PopQueen', minutes: 1998, rank: 4 },
-        { id: 5, username: 'IndieVibes', minutes: 1756, rank: 5 },
-    ];
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { currentUser } = useAuth();
+
+    useEffect(() => {
+        loadLeaderboard();
+    }, []);
+
+    const loadLeaderboard = async () => {
+        try {
+            setLoading(true);
+            const leaderboardData = await getLeaderboard(50);
+            setUsers(leaderboardData);
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getRankIcon = (rank) => {
         switch (rank) {
@@ -53,58 +66,62 @@ const Leaderboard = () => {
                     </div>
                 </div>
 
-                {/* Auth Notice */}
-                <div className="bg-[#181818] border-2 border-dashed border-[#ff6b1a] rounded-lg p-6 mb-8">
-                    <h3 className="text-lg font-bold text-white mb-2">🔒 Coming Soon</h3>
-                    <p className="text-sm text-[#a7a7a7]">
-                        The leaderboard will be available once user accounts are implemented. 
-                        Sign in to track your listening time and compete with others!
-                    </p>
-                </div>
+                {loading ? (
+                    <div className="text-center py-12">
+                        <p className="text-[#b3b3b3]">Loading leaderboard...</p>
+                    </div>
+                ) : users.length === 0 ? (
+                    <div className="bg-[#181818] border-2 border-dashed border-[#ff6b1a] rounded-lg p-6 mb-8">
+                        <h3 className="text-lg font-bold text-white mb-2">🎵 Start Listening!</h3>
+                        <p className="text-sm text-[#a7a7a7]">
+                            No listening data yet. Sign in and start playing music to appear on the leaderboard!
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Leaderboard */}
+                        <div className="space-y-3">
+                            {users.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
+                                        user.rank <= 3 ? getRankBadge(user.rank) : 'bg-[#181818] hover:bg-[#282828]'
+                                    } ${currentUser?.uid === user.id ? 'ring-2 ring-[#1ed760]' : ''}`}
+                                >
+                                    {/* Rank */}
+                                    <div className="flex items-center justify-center w-10">
+                                        {getRankIcon(user.rank)}
+                                    </div>
 
-                {/* Mock Leaderboard */}
-                <div className="space-y-3">
-                    {mockUsers.map((user) => (
-                        <div
-                            key={user.id}
-                            className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
-                                user.rank <= 3 ? getRankBadge(user.rank) : 'bg-[#181818] hover:bg-[#282828]'
-                            }`}
-                        >
-                            {/* Rank */}
-                            <div className="flex items-center justify-center w-10">
-                                {getRankIcon(user.rank)}
-                            </div>
+                                    {/* Avatar Placeholder */}
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white text-lg flex-shrink-0">
+                                        {user.username[0].toUpperCase()}
+                                    </div>
 
-                            {/* Avatar Placeholder */}
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white text-lg flex-shrink-0">
-                                {user.username[0].toUpperCase()}
-                            </div>
+                                    {/* Username */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`font-bold truncate ${user.rank <= 3 ? 'text-white' : 'text-white'}`}>
+                                            {user.username}
+                                            {currentUser?.uid === user.id && (
+                                                <span className="ml-2 text-xs text-[#1ed760]">(You)</span>
+                                            )}
+                                        </p>
+                                        <p className={`text-sm ${user.rank <= 3 ? 'text-white/80' : 'text-[#a7a7a7]'}`}>
+                                            {Math.floor(user.listeningMinutes).toLocaleString()} minutes
+                                        </p>
+                                    </div>
 
-                            {/* Username */}
-                            <div className="flex-1 min-w-0">
-                                <p className={`font-bold truncate ${user.rank <= 3 ? 'text-white' : 'text-white'}`}>
-                                    {user.username}
-                                </p>
-                                <p className={`text-sm ${user.rank <= 3 ? 'text-white/80' : 'text-[#a7a7a7]'}`}>
-                                    {user.minutes.toLocaleString()} minutes
-                                </p>
-                            </div>
-
-                            {/* Badge for top 3 */}
-                            {user.rank <= 3 && (
-                                <div className="text-xs font-bold text-white/90 bg-white/20 px-3 py-1 rounded-full">
-                                    TOP {user.rank}
+                                    {/* Badge for top 3 */}
+                                    {user.rank <= 3 && (
+                                        <div className="text-xs font-bold text-white/90 bg-white/20 px-3 py-1 rounded-full">
+                                            TOP {user.rank}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    ))}
-                </div>
-
-                {/* Footer Note */}
-                <div className="mt-8 text-center text-sm text-[#a7a7a7]">
-                    <p>Preview data shown • Actual leaderboard requires authentication</p>
-                </div>
+                    </>
+                )}
             </div>
         </div>
     );

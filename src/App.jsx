@@ -13,6 +13,7 @@ import Album from './pages/Album';
 import LikedSongs from './pages/LikedSongs';
 import Settings from './pages/Settings';
 import CurrentlyPlaying from './pages/CurrentlyPlaying';
+import Leaderboard from './pages/Leaderboard';
 import { Menu, X } from 'lucide-react';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
                 <Route path="/liked" element={<LikedSongs />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/currently-playing" element={<CurrentlyPlaying />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:name" element={<Album />} />
               </Routes>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Search, Library, Heart, Settings, LogIn, Users } from 'lucide-react';
+import { Search, Library, Heart, Settings, LogIn, Users, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
@@ -21,8 +21,9 @@ const Sidebar = ({ onNavigate }) => {
 
             {/* Main Nav */}
             <div className="flex flex-col px-3 gap-1">
-                <NavItem to="/" icon={<Library size={26} />} label="All Songs" active={location.pathname === '/' || location.pathname === '/library'} onNavigate={onNavigate} />
-                <NavItem to="/search" icon={<Search size={26} />} label="Search" active={location.pathname === '/search'} onNavigate={onNavigate} />
+                <NavItem to="/" icon={<Library size={26} />} label="All Songs" onNavigate={onNavigate} />
+                <NavItem to="/search" icon={<Search size={26} />} label="Search" onNavigate={onNavigate} />
+                <NavItem to="/leaderboard" icon={<Trophy size={26} />} label="Leaderboard" onNavigate={onNavigate} />
             </div>
 
             <div className="mt-4 pt-1 px-3 flex flex-col">
@@ -30,23 +31,20 @@ const Sidebar = ({ onNavigate }) => {
                     <NavItem 
                         to="/liked" 
                         icon={<div className="bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] rounded-[3px] p-1 text-white"><Heart size={14} fill="currentColor" /></div>} 
-                        label="Liked Songs" 
-                        active={location.pathname === '/liked'} 
+                        label="Liked Songs"
                         onNavigate={onNavigate} 
                     />
                     <NavItem 
                         to="/settings" 
                         icon={<div className="bg-[#b3b3b3] rounded-[3px] p-1 text-black"><Settings size={14} /></div>} 
-                        label="Settings" 
-                        active={location.pathname === '/settings'} 
+                        label="Settings"
                         onNavigate={onNavigate} 
                     />
                     {isAdmin() && (
                         <NavItem 
                             to="/currently-playing" 
                             icon={<div className="bg-gradient-to-br from-green-600 to-green-700 rounded-[3px] p-1 text-white"><Users size={14} /></div>} 
-                            label="Currently Playing" 
-                            active={location.pathname === '/currently-playing'} 
+                            label="Currently Playing"
                             onNavigate={onNavigate} 
                         />
                     )}
@@ -95,7 +93,7 @@ const Sidebar = ({ onNavigate }) => {
     );
 };
 
-const NavItem = ({ to, icon, label, active, onNavigate }) => (
+const NavItem = ({ to, icon, label, onNavigate }) => (
     <NavLink
         to={to}
         onClick={() => onNavigate?.()}
