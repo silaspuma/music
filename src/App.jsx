@@ -6,7 +6,6 @@ import InstallPWA from './components/InstallPWA';
 import { PlayerProvider } from './contexts/PlayerContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import Home from './pages/Home';
 import Search from './pages/Search';
 import Library from './pages/Library';
 import Artist from './pages/Artist';
@@ -53,7 +52,7 @@ function App() {
             {/* Main Content Area */}
             <div className="flex-1 bg-[#121212] overflow-y-auto m-2 lg:m-2 rounded-lg relative no-scrollbar">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Library />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<LikedSongs />} />

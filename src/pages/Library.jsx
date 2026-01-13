@@ -4,6 +4,7 @@ import { getSongs, uploadSong } from '../services/musicService';
 import SongRow from '../components/SongRow';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useAuth } from '../contexts/AuthContext';
+import RequestArtistModal from '../components/RequestArtistModal';
 import { formatTotalDuration } from '../utils/formatDuration';
 
 const Library = () => {
@@ -12,6 +13,7 @@ const Library = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [sortBy, setSortBy] = useState(() => localStorage.getItem('librarySortBy') || 'dateAdded');
+    const [showRequestArtist, setShowRequestArtist] = useState(false);
     const fileInputRef = useRef(null);
     const { playQueue } = usePlayer();
     const { isAdmin } = useAuth();
@@ -158,7 +160,7 @@ const Library = () => {
                         >
                             <Shuffle size={32} />
                         </button>
-                        {isAdmin() && (
+                        {isAdmin() ? (
                             <>
                                 <button
                                     onClick={handleUploadClick}
@@ -174,6 +176,14 @@ const Library = () => {
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="audio/*" multiple className="hidden" />
                             </>
+                        ) : (
+                            <button
+                                onClick={() => setShowRequestArtist(true)}
+                                className="bg-transparent border border-[#727272] text-white rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold hover:border-white transition-colors flex items-center gap-2 touch-active"
+                            >
+                                <Upload size={16} />
+                                Request Artist
+                            </button>
                         )}
                     </div>
                     <div className="flex items-center gap-4">
@@ -223,8 +233,8 @@ const Library = () => {
                         ))
                     )}
                 </div>
-            </div>
-        </div>
+            </div>            
+            <RequestArtistModal isOpen={showRequestArtist} onClose={() => setShowRequestArtist(false)} />        </div>
     );
 };
 
