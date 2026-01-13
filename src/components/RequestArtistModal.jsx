@@ -113,14 +113,14 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
                                 <Music size={24} className="text-white" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold">Request Artist</h2>
-                                <p className="text-sm text-[#b3b3b3]">Suggest a new artist for Pumafy</p>
+                                <h2 className="text-2xl font-bold">Request Album</h2>
+                                <p className="text-sm text-[#b3b3b3]">Suggest a new album to add to Pumafy</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Artist Name</label>
+                                <label className="block text-sm font-medium mb-2">Album Name</label>
                                 <input
                                     type="text"
                                     value={artistName}
@@ -179,7 +179,7 @@ const RequestArtistModal = ({ isOpen, onClose }) => {
 
                         {!isSubmitting && (
                             <p className="text-xs text-[#b3b3b3] text-center mt-4">
-                                We will add all of the artist's songs in 1-3 business days after approval.
+                                We will add the album in 1-3 business days after approval.
                             </p>
                         )}
                     </>
