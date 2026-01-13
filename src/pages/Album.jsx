@@ -50,7 +50,7 @@ const Album = () => {
                             {songs[0]?.imageUrl && <img src={songs[0].imageUrl} className="h-full w-full object-cover" />}
                         </div>
                         <span className="hover:underline cursor-pointer">{artistName}</span>
-                        <span className="font-normal text-[#b3b3b3]">• 2024 • {songs.length} songs, {albumDuration}</span>
+                        <span className="font-normal text-[#b3b3b3]">• 2026 • {songs.length} songs, {albumDuration}</span>
                     </div>
                 </div>
             </div>
@@ -85,8 +85,8 @@ const Album = () => {
                 </div>
 
                 <div className="mt-8 pt-8 px-4 text-[#a7a7a7] text-xs font-medium">
-                    <p>© 2024 {artistName}</p>
-                    <p>℗ 2024 {artistName}</p>
+                    <p>© 2026 {artistName}</p>
+                    <p>All rights reserved. Unauthorized duplication is a violation of applicable laws.</p>
                 </div>
             </div>
         </div>

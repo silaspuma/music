@@ -3,7 +3,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, where, increment, updateDoc, limit } from 'firebase/firestore';
 import * as mm from 'music-metadata-browser';
 
-export const uploadSong = async (file) => {
+export const uploadSong = async (file, uploaderInfo) => {
     try {
         console.log("Starting upload for file:", file.name);
         
@@ -72,6 +72,9 @@ export const uploadSong = async (file) => {
             duration,
             url: downloadUrl,
             imageUrl: coverUrl,
+            uploadedBy: uploaderInfo.uid,
+            uploaderUsername: uploaderInfo.username,
+            uploaderEmail: uploaderInfo.email,
             createdAt: new Date(),
             searchKeywords: [title, artist, album].map(s => s.toLowerCase())
         };
