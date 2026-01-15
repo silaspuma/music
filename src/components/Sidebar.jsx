@@ -40,7 +40,7 @@ const Sidebar = ({ onNavigate }) => {
                         label="Settings"
                         onNavigate={onNavigate} 
                     />
-                    {isAdmin() && (
+                    {currentUser && (
                         <NavItem 
                             to="/currently-playing" 
                             icon={<div className="bg-gradient-to-br from-green-600 to-green-700 rounded-[3px] p-1 text-white"><Users size={14} /></div>} 

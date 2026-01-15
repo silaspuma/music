@@ -1,8 +1,8 @@
 import { db } from '../firebase.config';
-import { collection, doc, setDoc, deleteDoc, query, where, onSnapshot, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, where, onSnapshot, getDocs, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 
 // Update or create a user's current listening session
-export const updateListeningSession = async (userId, username, songData) => {
+export const updateListeningSession = async (userId, username, songData, currentTime = 0) => {
     try {
         const sessionRef = doc(db, 'listeningSessions', userId);
         await setDoc(sessionRef, {
@@ -17,8 +17,9 @@ export const updateListeningSession = async (userId, username, songData) => {
                 duration: songData.duration
             } : null,
             isPlaying: !!songData,
+            currentTime: currentTime,
             lastUpdated: serverTimestamp()
-        });
+        }, { merge: true });
     } catch (error) {
         console.error('Error updating listening session:', error);
     }
@@ -108,5 +109,39 @@ export const getActiveSessions = async () => {
     } catch (error) {
         console.error('Error getting active sessions:', error);
         return [];
+    }
+};
+
+// Subscribe to a specific user's listening session
+export const subscribeToUserSession = (targetUserId, callback) => {
+    const sessionRef = doc(db, 'listeningSessions', targetUserId);
+    
+    const unsubscribe = onSnapshot(sessionRef, (snapshot) => {
+        if (snapshot.exists()) {
+            callback({
+                id: snapshot.id,
+                ...snapshot.data()
+            });
+        } else {
+            callback(null);
+        }
+    }, (error) => {
+        console.error('Error subscribing to user session:', error);
+        callback(null);
+    });
+    
+    return unsubscribe;
+};
+
+// Update current playback time for syncing
+export const updateCurrentTime = async (userId, currentTime) => {
+    try {
+        const sessionRef = doc(db, 'listeningSessions', userId);
+        await updateDoc(sessionRef, {
+            currentTime,
+            lastUpdated: serverTimestamp()
+        });
+    } catch (error) {
+        console.error('Error updating current time:', error);
     }
 };
