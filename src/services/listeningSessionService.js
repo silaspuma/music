@@ -1,5 +1,5 @@
 import { db } from '../firebase.config';
-import { collection, doc, setDoc, deleteDoc, query, where, onSnapshot, getDocs, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, onSnapshot, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 // Update or create a user's current listening session
 export const updateListeningSession = async (userId, username, songData, currentTime = 0) => {

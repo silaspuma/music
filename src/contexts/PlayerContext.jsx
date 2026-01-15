@@ -26,7 +26,6 @@ export function PlayerProvider({ children }) {
     const sleepTimerInterval = useRef(null);
     const listeningStartTime = useRef(null); // Track when listening started
     const listenInUnsubscribe = useRef(null); // Store the unsubscribe function for listen-in
-    const syncTimeoutRef = useRef(null); // For debouncing time sync
 
     // Setup Media Session API for lock screen controls
     useEffect(() => {

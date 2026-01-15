@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart, Headphones, X } from 'lucide-react';
 import QueueView from './QueueView';
