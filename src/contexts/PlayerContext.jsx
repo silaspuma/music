@@ -502,6 +502,8 @@ export function PlayerProvider({ children }) {
             }
 
             // Sync the song if different
+            // Note: This replaces the user's current queue with the target user's song
+            // This is intentional behavior for the "Listen In" feature - we want full sync
             if (!currentSong || currentSong.id !== sessionData.currentSong.id) {
                 setCurrentSong(sessionData.currentSong);
                 setQueue([sessionData.currentSong]);
