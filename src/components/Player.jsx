@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle, ListMusic, Heart, Headphones, X } from 'lucide-react';
 import QueueView from './QueueView';
 
 const Player = () => {
-    const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat } = usePlayer();
+    const { currentSong, isPlaying, togglePlay, playNext, playPrevious, volume, setVolume, audioRef, seek, isShuffle, toggleShuffle, repeatMode, toggleRepeat, listeningToUserId, stopListeningIn } = usePlayer();
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isHoveringSeek, setIsHoveringSeek] = useState(false);
@@ -62,8 +62,24 @@ const Player = () => {
                 <div className="flex flex-col justify-center overflow-hidden mr-4">
                     <span className="text-sm font-medium hover:underline cursor-pointer truncate text-white">{currentSong.title}</span>
                     <span className="text-xs text-[#b3b3b3] hover:underline cursor-pointer hover:text-white truncate">{currentSong.artist}</span>
+                    {listeningToUserId && (
+                        <div className="flex items-center gap-1 mt-1">
+                            <Headphones size={12} className="text-[#ff6b1a]" />
+                            <span className="text-xs text-[#ff6b1a] font-semibold">Listening In</span>
+                        </div>
+                    )}
                 </div>
-                <button className="text-[#b3b3b3] hover:text-white transition-colors"><Heart size={16} /></button>
+                {listeningToUserId ? (
+                    <button 
+                        onClick={stopListeningIn}
+                        className="text-[#ff6b1a] hover:text-[#ff8c42] transition-colors"
+                        title="Stop Listening In"
+                    >
+                        <X size={20} />
+                    </button>
+                ) : (
+                    <button className="text-[#b3b3b3] hover:text-white transition-colors"><Heart size={16} /></button>
+                )}
             </div>
 
             {/* Center: Controls */}

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Search, Library, Heart, Settings, LogIn, Users, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
 const Sidebar = ({ onNavigate }) => {
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const location = useLocation();
-    const { currentUser, userProfile, logout, isAdmin } = useAuth();
+    const { currentUser, userProfile, logout } = useAuth();
 
     return (
         <div className="w-[320px] bg-[#000000e6] h-full flex flex-col pt-6 pb-3 text-[#b3b3b3] gap-y-3 sticky top-0 border-r border-[#181818]">
@@ -40,7 +39,7 @@ const Sidebar = ({ onNavigate }) => {
                         label="Settings"
                         onNavigate={onNavigate} 
                     />
-                    {isAdmin() && (
+                    {currentUser && (
                         <NavItem 
                             to="/currently-playing" 
                             icon={<div className="bg-gradient-to-br from-green-600 to-green-700 rounded-[3px] p-1 text-white"><Users size={14} /></div>} 

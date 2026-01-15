@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePlayer } from '../contexts/PlayerContext';
 import { subscribeToListeningSessions, adminControlPlayState, adminControlSkip } from '../services/listeningSessionService';
-import { Play, Pause, SkipForward, SkipBack, Music2, Users } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Music2, Users, Headphones, StopCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CurrentlyPlaying = () => {
-    const { isAdmin } = useAuth();
+    const { currentUser, isAdmin } = useAuth();
+    const { startListeningIn, stopListeningIn, listeningToUserId } = usePlayer();
     const navigate = useNavigate();
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Redirect if not admin
-        if (!isAdmin()) {
+        // Redirect if not logged in
+        if (!currentUser) {
             navigate('/');
             return;
         }
@@ -26,7 +28,7 @@ const CurrentlyPlaying = () => {
         return () => {
             if (unsubscribe) unsubscribe();
         };
-    }, [isAdmin, navigate]);
+    }, [currentUser, navigate]);
 
     const handlePlayPause = async (userId, currentPlayState) => {
         try {
@@ -46,7 +48,7 @@ const CurrentlyPlaying = () => {
         }
     };
 
-    if (!isAdmin()) {
+    if (!currentUser) {
         return null;
     }
 
@@ -64,7 +66,7 @@ const CurrentlyPlaying = () => {
         );
     }
 
-    const activeSessions = sessions.filter(s => s.currentSong);
+    const activeSessions = sessions.filter(s => s.currentSong && s.userId !== currentUser.uid);
 
     return (
         <div className="p-6 lg:p-8">
@@ -89,7 +91,9 @@ const CurrentlyPlaying = () => {
                     </div>
                     <h2 className="text-xl font-bold mb-2">No Active Listeners</h2>
                     <p className="text-[#b3b3b3] max-w-md">
-                        When users start playing music, they'll appear here and you can control their playback.
+                        {isAdmin() 
+                            ? "When users start playing music, they'll appear here and you can control their playback."
+                            : "When other users start playing music, they'll appear here and you can listen along with them."}
                     </p>
                 </div>
             ) : (
@@ -144,39 +148,63 @@ const CurrentlyPlaying = () => {
                                 </div>
                             )}
 
-                            {/* Admin Controls */}
-                            <div className="flex items-center justify-center gap-4 pt-3 border-t border-[#282828]">
-                                <button
-                                    onClick={() => handleSkip(session.userId, 'previous')}
-                                    className="text-[#b3b3b3] hover:text-white transition-colors p-2"
-                                    title="Previous track"
-                                >
-                                    <SkipBack size={20} />
-                                </button>
-                                <button
-                                    onClick={() => handlePlayPause(session.userId, session.isPlaying)}
-                                    className="bg-white rounded-full p-3 text-black hover:scale-105 transition-transform"
-                                    title={session.isPlaying ? 'Pause' : 'Play'}
-                                >
-                                    {session.isPlaying ? (
-                                        <Pause size={20} fill="currentColor" />
-                                    ) : (
-                                        <Play size={20} fill="currentColor" />
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => handleSkip(session.userId, 'next')}
-                                    className="text-[#b3b3b3] hover:text-white transition-colors p-2"
-                                    title="Next track"
-                                >
-                                    <SkipForward size={20} />
-                                </button>
-                            </div>
+                            {/* Controls: Admin controls or Listen In button */}
+                            {isAdmin() ? (
+                                <>
+                                    <div className="flex items-center justify-center gap-4 pt-3 border-t border-[#282828]">
+                                        <button
+                                            onClick={() => handleSkip(session.userId, 'previous')}
+                                            className="text-[#b3b3b3] hover:text-white transition-colors p-2"
+                                            title="Previous track"
+                                        >
+                                            <SkipBack size={20} />
+                                        </button>
+                                        <button
+                                            onClick={() => handlePlayPause(session.userId, session.isPlaying)}
+                                            className="bg-white rounded-full p-3 text-black hover:scale-105 transition-transform"
+                                            title={session.isPlaying ? 'Pause' : 'Play'}
+                                        >
+                                            {session.isPlaying ? (
+                                                <Pause size={20} fill="currentColor" />
+                                            ) : (
+                                                <Play size={20} fill="currentColor" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => handleSkip(session.userId, 'next')}
+                                            className="text-[#b3b3b3] hover:text-white transition-colors p-2"
+                                            title="Next track"
+                                        >
+                                            <SkipForward size={20} />
+                                        </button>
+                                    </div>
 
-                            {session.adminControlled && (
-                                <p className="text-xs text-[#ff6b1a] text-center mt-2">
-                                    Admin controlled
-                                </p>
+                                    {session.adminControlled && (
+                                        <p className="text-xs text-[#ff6b1a] text-center mt-2">
+                                            Admin controlled
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="pt-3 border-t border-[#282828]">
+                                    {listeningToUserId === session.userId ? (
+                                        <button
+                                            onClick={() => stopListeningIn()}
+                                            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                                        >
+                                            <StopCircle size={20} />
+                                            Stop Listening In
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => startListeningIn(session.userId)}
+                                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[#ff6b1a] to-[#ff8c42] hover:from-[#ff7b2a] hover:to-[#ff9c52] text-white font-semibold py-3 px-4 rounded-lg transition-all hover:scale-[1.02]"
+                                        >
+                                            <Headphones size={20} />
+                                            Listen In
+                                        </button>
+                                    )}
+                                </div>
                             )}
                         </div>
                     ))}

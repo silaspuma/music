@@ -75,8 +75,8 @@ service cloud.firestore {
     
     // Listening sessions collection (for active session tracking)
     match /listeningSessions/{userId} {
-      // Admins can read all sessions, users can read their own
-      allow read: if isAdmin() || isOwner(userId);
+      // All authenticated users can read all sessions (for "Listen In" feature)
+      allow read: if isAuthenticated();
       // Users can create their own session (userId in document must match)
       allow create: if isOwner(userId) && isOwner(request.resource.data.userId);
       // Users can update their own session, admins can update any session

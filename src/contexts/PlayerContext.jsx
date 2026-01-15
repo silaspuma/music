@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { trackPlay } from '../services/musicService';
-import { updateListeningSession, clearListeningSession, updatePlayState } from '../services/listeningSessionService';
+import { updateListeningSession, clearListeningSession, updatePlayState, subscribeToUserSession, updateCurrentTime } from '../services/listeningSessionService';
 import { useAuth } from './AuthContext';
 import AuthModal from '../components/AuthModal';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -21,9 +21,11 @@ export function PlayerProvider({ children }) {
     const [sleepTimer, setSleepTimer] = useState(null); // null or timestamp when to pause
     const [sleepTimerMinutes, setSleepTimerMinutes] = useState(0); // minutes remaining
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [listeningToUserId, setListeningToUserId] = useState(null); // Track who we're listening in to
     const audioRef = useRef(new Audio());
     const sleepTimerInterval = useRef(null);
     const listeningStartTime = useRef(null); // Track when listening started
+    const listenInUnsubscribe = useRef(null); // Store the unsubscribe function for listen-in
 
     // Setup Media Session API for lock screen controls
     useEffect(() => {
@@ -481,6 +483,77 @@ export function PlayerProvider({ children }) {
         }
     };
 
+    const startListeningIn = (targetUserId) => {
+        if (!currentUser || targetUserId === currentUser.uid) return;
+        
+        // Stop any previous listen-in subscription
+        if (listenInUnsubscribe.current) {
+            listenInUnsubscribe.current();
+        }
+
+        setListeningToUserId(targetUserId);
+
+        // Subscribe to target user's session
+        listenInUnsubscribe.current = subscribeToUserSession(targetUserId, (sessionData) => {
+            if (!sessionData || !sessionData.currentSong) {
+                // User stopped playing or session ended
+                stopListeningIn();
+                return;
+            }
+
+            // Sync the song if different
+            // Note: This replaces the user's current queue with the target user's song
+            // This is intentional behavior for the "Listen In" feature - we want full sync
+            if (!currentSong || currentSong.id !== sessionData.currentSong.id) {
+                setCurrentSong(sessionData.currentSong);
+                setQueue([sessionData.currentSong]);
+                setCurrentIndex(0);
+            }
+
+            // Sync play state
+            setIsPlaying(sessionData.isPlaying);
+
+            // Sync playback position (with a small buffer to avoid constant seeking)
+            if (sessionData.currentTime !== undefined && audioRef.current) {
+                const timeDiff = Math.abs(audioRef.current.currentTime - sessionData.currentTime);
+                if (timeDiff > 2) { // Only sync if difference is more than 2 seconds
+                    audioRef.current.currentTime = sessionData.currentTime;
+                }
+            }
+        });
+    };
+
+    const stopListeningIn = () => {
+        if (listenInUnsubscribe.current) {
+            listenInUnsubscribe.current();
+            listenInUnsubscribe.current = null;
+        }
+        setListeningToUserId(null);
+    };
+
+    // Cleanup listen-in on unmount
+    useEffect(() => {
+        return () => {
+            if (listenInUnsubscribe.current) {
+                listenInUnsubscribe.current();
+            }
+        };
+    }, []);
+
+    // Update current time periodically when not listening in
+    useEffect(() => {
+        if (currentUser && currentSong && !listeningToUserId && isPlaying) {
+            const interval = setInterval(() => {
+                if (audioRef.current && !audioRef.current.paused) {
+                    const currentTime = audioRef.current.currentTime;
+                    updateCurrentTime(currentUser.uid, currentTime);
+                }
+            }, 3000); // Update every 3 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [currentUser, currentSong, listeningToUserId, isPlaying]);
+
     const value = {
         currentSong,
         isPlaying,
@@ -507,7 +580,10 @@ export function PlayerProvider({ children }) {
         sleepTimerMinutes,
         setSleepTimerDuration,
         showAuthModal,
-        setShowAuthModal
+        setShowAuthModal,
+        listeningToUserId,
+        startListeningIn,
+        stopListeningIn
     };
 
     return (
