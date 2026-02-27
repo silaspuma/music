@@ -10,6 +10,7 @@ const Player = () => {
     const [isHoveringSeek, setIsHoveringSeek] = useState(false);
     const [showQueue, setShowQueue] = useState(false);
 
+    // Existing Audio Listeners
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -26,6 +27,45 @@ const Player = () => {
         }
     }, [audioRef]);
 
+    // NEW: Media Session API Logic for iPhone Lock Screen Controls
+    useEffect(() => {
+        if ('mediaSession' in navigator && currentSong) {
+            // 1. Update Metadata (Title, Artist, Album Art)
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentSong.title || 'Unknown Title',
+                artist: currentSong.artist || 'Unknown Artist',
+                album: 'My Uploads',
+                artwork: [
+                    { 
+                        src: currentSong.imageUrl || '', 
+                        sizes: '512x512', 
+                        type: 'image/png' 
+                    }
+                ]
+            });
+
+            // 2. Set Action Handlers (This swaps 10s skip for Next/Prev buttons)
+            navigator.mediaSession.setActionHandler('play', () => togglePlay());
+            navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+            navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
+            navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+            
+            // Optional: Support seeking from the lock screen slider
+            navigator.mediaSession.setActionHandler('seekto', (details) => {
+                if (details.seekTime) {
+                    seek(details.seekTime);
+                }
+            });
+        }
+    }, [currentSong, togglePlay, playNext, playPrevious, seek]);
+
+    // Update playback state on lock screen when playing/pausing
+    useEffect(() => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+        }
+    }, [isPlaying]);
+
     const formatTime = (time) => {
         if (isNaN(time)) return "0:00";
         const minutes = Math.floor(time / 60);
@@ -39,7 +79,6 @@ const Player = () => {
         setCurrentTime(newTime);
     };
 
-    // Calculate progress percentage for linear-gradient fill
     const progressPercent = duration ? (currentTime / duration) * 100 : 0;
     const volumePercent = volume * 100;
 
@@ -129,7 +168,7 @@ const Player = () => {
                             className={`absolute h-full bg-white group-hover:bg-[#1ed760] rounded-full z-10 pointer-events-none transition-colors duration-100`}
                             style={{ width: `${progressPercent}%` }}
                         ></div>
-                        {/* Thumb (Only visible on hover via CSS) */}
+                        {/* Thumb */}
                         <div
                             className={`absolute h-3 w-3 bg-white rounded-full shadow-md z-10 pointer-events-none transition-opacity duration-100 ${isHoveringSeek ? 'opacity-100' : 'opacity-0'}`}
                             style={{ left: `${progressPercent}%`, transform: 'translateX(-50%)' }}
@@ -139,7 +178,7 @@ const Player = () => {
                 </div>
             </div>
 
-            {/* Right: Volume & Extras (hidden on mobile) */}
+            {/* Right: Volume & Extras */}
             <div className="hidden sm:flex items-center justify-end w-[30%] min-w-[180px] gap-x-3">
                 <button 
                     onClick={() => setShowQueue(true)}
